@@ -7,7 +7,7 @@ from sqlalchemy import (
     ForeignKey, UniqueConstraint, Index, BigInteger, func,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy.orm import mapped_column, Mapped, relationship as orm_relationship
 from infrastructure.database.session import Base
 from sqlalchemy import DateTime
 
@@ -26,7 +26,7 @@ class Family(Base):
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    members: Mapped[list[FamilyMember]] = relationship(back_populates="family", lazy="noload")
+    members: Mapped[list[FamilyMember]] = orm_relationship(back_populates="family", lazy="noload")
     __table_args__ = (Index("idx_families_primary_user", "primary_user_id"),)
 
 class FamilyMember(Base):
@@ -47,7 +47,7 @@ class FamilyMember(Base):
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    family: Mapped[Family] = relationship(back_populates="members", lazy="noload")  # type: ignore
+    family: Mapped[Family] = orm_relationship(back_populates="members", lazy="noload")  # type: ignore
     __table_args__ = (Index("idx_members_family", "family_id"), Index("idx_members_firebase_uid", "firebase_uid"),)
 
 class HealthBaseline(Base):
