@@ -1,0 +1,39 @@
+rules:
+  no_direct_cognee_imports:
+    description: "cognee must only be imported in core/providers/memory_provider.py"
+    pattern: "import cognee"
+    allowed_files:
+      - "core/providers/memory_provider.py"
+    severity: error
+  no_logic_in_routers:
+    description: "Router functions should call a service or provider. No inline logic."
+    files:
+      - "api/routers/**/*.py"
+    max_function_lines: 20
+    severity: warning
+  phi_log_detection:
+    description: "Detect potential PHI in log statements"
+    pattern: "logger\.(info|debug|warning|error).*(?:symptom|diagnosis|medication_name|blood_pressure|glucose|pressure)"
+    severity: error
+  family_id_required:
+    description: "Repository methods must accept family_id as a parameter"
+    files:
+      - "core/repositories/**/*.py"
+    severity: warning
+  no_raw_session_in_services:
+    description: "Services must use repository classes, not direct db session"
+    files:
+      - "core/services/**/*.py"
+    pattern: "db\.execute|db\.query|db\.add"
+    severity: error
+  no_direct_worker_calls:
+    description: "Workers must not call each other directly. Use the Event Bus."
+    files:
+      - "core/workers/**/*.py"
+    pattern: "from core\.workers\. import|import core\.workers\."
+    severity: error
+review_on:
+  - pull_request
+  - pre_commit
+block_merge_on:
+  - error
