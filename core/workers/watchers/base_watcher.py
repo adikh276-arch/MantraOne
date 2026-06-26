@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 import structlog
 from core.domain.enums import WatcherDomain
 from core.events.types import BaseHealthEvent
@@ -12,5 +13,5 @@ class BaseWatcher:
         logger.info("watcher_evaluating", domain=self.domain.value, member_id=member_id)
         await self._process(member_id, family_id, events)
 
-    async def _process(self, member_id: str, family_id: str, events: list[BaseHealthEvent]) -> None:
+    async def _process(self, member_id: str, family_id: str, events: list[BaseHealthEvent]) -> Any:
         raise NotImplementedError
