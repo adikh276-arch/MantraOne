@@ -1,9 +1,6 @@
 import asyncio
 import httpx
-import uuid
 import time
-import os
-import json
 
 BASE_URL = "http://localhost:8000"
 MOCK_TOKEN = "mock_token_12345"
@@ -41,7 +38,7 @@ async def verify():
         print("\n[*] 4. Stream Message (Initial Chat)")
         start = time.time()
         async with client.stream("POST", f"/v1/conversations/{conv_id}/messages", json={"family_id": family_id, "member_id": family_id, "text": "Hi, I am John. I sleep 4 hours a night."}) as response:
-            assert response.status_code == 200, f"Message streaming failed"
+            assert response.status_code == 200, "Message streaming failed"
             first_token = True
             print("  Response: ", end="")
             async for chunk in response.aiter_text():
@@ -64,7 +61,7 @@ async def verify():
         print("\n[*] 6. Stream Message (Recall test)")
         start = time.time()
         async with client.stream("POST", f"/v1/conversations/{conv_id}/messages", json={"family_id": family_id, "member_id": family_id, "text": "What do you know about my sleep?"}) as response:
-            assert response.status_code == 200, f"Message streaming failed"
+            assert response.status_code == 200, "Message streaming failed"
             first_token = True
             print("  Response: ", end="")
             async for chunk in response.aiter_text():
