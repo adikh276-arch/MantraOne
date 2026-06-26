@@ -1,0 +1,27 @@
+{
+  "name": "Singh Family",
+  "primary_member": {
+    "name": "Vikram Singh",
+    "role": "Dad",
+    "age": 38
+  },
+  "members": [
+    {
+      "name": "Neha Singh",
+      "role": "Mom",
+      "age": 35
+    },
+    {
+      "name": "Aarav Singh",
+      "role": "Son",
+      "age": 8
+    }
+  ],
+  "reports": [
+    {
+      "member": "Aarav Singh",
+      "type": "medical_history",
+      "file": "vaccination_record.pdf"
+    }
+  ]
+}

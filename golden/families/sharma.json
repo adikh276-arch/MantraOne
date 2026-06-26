@@ -1,0 +1,32 @@
+{
+  "name": "Sharma Family",
+  "primary_member": {
+    "name": "Anil Sharma",
+    "role": "Dad",
+    "age": 52
+  },
+  "members": [
+    {
+      "name": "Priya Sharma",
+      "role": "Mom",
+      "age": 48
+    },
+    {
+      "name": "Rohan Sharma",
+      "role": "Son",
+      "age": 16
+    }
+  ],
+  "reports": [
+    {
+      "member": "Anil Sharma",
+      "type": "medical_history",
+      "file": "diabetes_lab.pdf"
+    },
+    {
+      "member": "Priya Sharma",
+      "type": "medical_history",
+      "file": "thyroid_report.pdf"
+    }
+  ]
+}

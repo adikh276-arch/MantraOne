@@ -1,0 +1,13 @@
+.env.local
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+/tmp/mantraone_storage
+/tmp/mantraone_cognee
+.pytest_cache/
+htmlcov/
+dist/
+build/
+*.egg-info/
+.DS_Store

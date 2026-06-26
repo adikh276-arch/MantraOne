@@ -1,0 +1,22 @@
+{
+  "name": "Iyer Family",
+  "primary_member": {
+    "name": "Karthik Iyer",
+    "role": "Dad",
+    "age": 45
+  },
+  "members": [
+    {
+      "name": "Meera Iyer",
+      "role": "Mom",
+      "age": 42
+    }
+  ],
+  "reports": [
+    {
+      "member": "Karthik Iyer",
+      "type": "medical_history",
+      "file": "cbc_report.pdf"
+    }
+  ]
+}
