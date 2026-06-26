@@ -108,4 +108,25 @@ class ForgetResult(BaseModel):
     member_id: UUID | None
     records_deleted: int
     memory_cleared: bool
+
+class TimelineEvent(BaseModel):
+    date: datetime
+    title: str
+    description: str
+    domains: list[str] = Field(default_factory=list)
+
+class Timeline(BaseModel):
+    member_id: UUID
+    events: list[TimelineEvent]
+
+class MedicationHistory(BaseModel):
+    member_id: UUID
+    active_medications: list[str]
+    stopped_medications: list[str]
+    interactions_flagged: bool
+
+class RiskSummary(BaseModel):
+    member_id: UUID
+    high_risk_domains: list[str]
+    clinical_summary: str
     completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -19,10 +19,11 @@ class EscalationService:
         if len(recent_signals) < 2:
             return None
             
+        signal_data = [{"domain": s.watcher_domain, "type": s.signal_type, "severity": s.severity} for s in recent_signals]
         reason = await self._llm.generate_escalation_reason(
             domains=[s.watcher_domain for s in recent_signals],
-            signals=[{"domain": s.watcher_domain} for s in recent_signals],
-            member_context="Member context"
+            signals=signal_data,
+            member_context="Patient is 65 years old with a history of hypertension."
         )
         
         event = EscalationEvent(

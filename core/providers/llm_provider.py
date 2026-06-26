@@ -40,10 +40,12 @@ class LLMProvider(ILLMProvider):
         return json.loads(text[start:end])
 
     async def generate_checkin_question(self, domain: str, member_name: str, context: str, recent_signals: list[dict]) -> str:
-        return await self.complete(self.COORDINATOR_SYSTEM_PROMPT, "Generate question.", 150, 0.7)
+        prompt = f"Member: {member_name}\nDomain: {domain}\nContext: {context}\nSignals: {recent_signals}\n\nTask: Generate a compassionate, context-aware daily check-in question about their {domain}. Keep it under 2 sentences."
+        return await self.complete(self.COORDINATOR_SYSTEM_PROMPT, prompt, 150, 0.7)
 
     async def generate_escalation_reason(self, domains: list[str], signals: list[dict], member_context: str) -> str:
-        return await self.complete(self.ESCALATION_SYSTEM_PROMPT, "Generate escalation.", 300)
+        prompt = f"Patient Context: {member_context}\nTriggering Domains: {domains}\nSignals: {signals}\n\nTask: Draft a concise, clinical 'Consultation Brief' for a doctor. Summarize the intersecting risk factors and recommend next steps."
+        return await self.complete(self.ESCALATION_SYSTEM_PROMPT, prompt, 300, 0.5)
 
     async def build_narrative(self, data_type: str, data_point: dict, member_name: str, baseline_context: str, recent_history: str) -> str:
         return await self.complete(self.NARRATIVE_SYSTEM_PROMPT, "Generate narrative.", 400)
