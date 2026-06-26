@@ -29,8 +29,8 @@ def main():
         else:
             files_to_check = []
             for t in target_files:
-                if "**" in t:
-                    files_to_check.extend(Path(".").rglob(t.split("**")[-1].lstrip("/")))
+                if "**" in t or "*" in t:
+                    files_to_check.extend(Path(".").glob(t))
                 else:
                     files_to_check.append(Path(t))
                     

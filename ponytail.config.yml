@@ -13,7 +13,7 @@ rules:
     severity: warning
   phi_log_detection:
     description: "Detect potential PHI in log statements"
-    pattern: "logger\.(info|debug|warning|error).*(?:symptom|diagnosis|medication_name|blood_pressure|glucose|pressure)"
+    pattern: 'logger\.(info|debug|warning|error).*(?:symptom|diagnosis|medication_name|blood_pressure|glucose|pressure)'
     severity: error
   family_id_required:
     description: "Repository methods must accept family_id as a parameter"
@@ -24,13 +24,13 @@ rules:
     description: "Services must use repository classes, not direct db session"
     files:
       - "core/services/**/*.py"
-    pattern: "db\.execute|db\.query|db\.add"
+    pattern: 'db\.execute|db\.query|db\.add'
     severity: error
   no_direct_worker_calls:
     description: "Workers must not call each other directly. Use the Event Bus."
     files:
       - "core/workers/**/*.py"
-    pattern: "from core\.workers\. import|import core\.workers\."
+    pattern: 'from core\.workers\. import|import core\.workers\.'
     severity: error
 review_on:
   - pull_request
