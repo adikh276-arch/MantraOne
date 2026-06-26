@@ -6,15 +6,64 @@ import { useState, useEffect } from "react";
 
 type UploadPhase = "idle" | "uploading" | "processing" | "extracting" | "creating_memory" | "done";
 
-export function Scene2Upload({ onNext }: { onNext: () => void }) {
+export function Scene2Upload({ onNext, mode }: { onNext: () => void, mode: "live" | "presentation" }) {
   const [phase, setPhase] = useState<UploadPhase>("idle");
 
   useEffect(() => {
-    if (phase === "uploading") setTimeout(() => setPhase("processing"), 1500);
-    if (phase === "processing") setTimeout(() => setPhase("extracting"), 2000);
-    if (phase === "extracting") setTimeout(() => setPhase("creating_memory"), 2500);
-    if (phase === "creating_memory") setTimeout(() => setPhase("done"), 2000);
-  }, [phase]);
+    if (mode === "presentation") {
+      if (phase === "uploading") setTimeout(() => setPhase("processing"), 1500);
+      if (phase === "processing") setTimeout(() => setPhase("extracting"), 2000);
+      if (phase === "extracting") setTimeout(() => setPhase("creating_memory"), 2500);
+      if (phase === "creating_memory") setTimeout(() => setPhase("done"), 2000);
+    } else if (mode === "live") {
+      if (phase === "uploading") {
+         const triggerUpload = async () => {
+             try {
+                // Fetch family ID
+                const familyRes = await fetch('http://localhost:8000/v1/families/');
+                const families = await familyRes.json();
+                const familyId = families[0]?.id;
+                
+                // Create a dummy blob to upload
+                const file = new File(["Mock Lab Report: HbA1c 8.2, Fasting Glucose 165."], "lab_report.pdf", { type: "application/pdf" });
+                const formData = new FormData();
+                formData.append("family_id", familyId);
+                formData.append("member_id", familyId); // using familyId as primary_user_id hack for golden dataset
+                formData.append("document_type", "Lab Report");
+                formData.append("file", file);
+
+                // Start animation phases in background while fetch is pending
+                const progressTimer = setInterval(() => {
+                   setPhase(p => {
+                      if (p === "uploading") return "processing";
+                      if (p === "processing") return "extracting";
+                      if (p === "extracting") return "creating_memory";
+                      return p;
+                   });
+                }, 1000);
+
+                const res = await fetch('http://localhost:8000/v1/documents/', {
+                   method: 'POST',
+                   body: formData
+                });
+                
+                clearInterval(progressTimer);
+                
+                if (res.ok) {
+                   setPhase("done");
+                } else {
+                   console.error("Upload failed");
+                   setPhase("done"); // fallback for demo
+                }
+             } catch(e) {
+                console.error(e);
+                setPhase("done");
+             }
+         };
+         triggerUpload();
+      }
+    }
+  }, [phase, mode]);
 
   return (
     <div className="w-full max-w-3xl flex flex-col items-center min-h-[60vh] justify-center">

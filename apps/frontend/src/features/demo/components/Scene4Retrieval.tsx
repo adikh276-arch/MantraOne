@@ -2,41 +2,99 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Search, CheckCircle, BrainCircuit } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-export function Scene4Retrieval({ onNext }: { onNext: () => void }) {
+export function Scene4Retrieval({ onNext, mode }: { onNext: () => void, mode: "live" | "presentation" }) {
   const [query, setQuery] = useState("");
-  const [phase, setPhase] = useState<"idle" | "searching" | "answering">("idle");
-  const [retrievedCount, setRetrievedCount] = useState(0);
+  const [phase, setPhase] = useState<"idle" | "searching" | "answering" | "done">("idle");
+  const [retrievedDocs, setRetrievedDocs] = useState<string[]>([]);
+  const [answer, setAnswer] = useState("");
+  
+  const PRESENTATION_ANSWER = "Based on the recent Lab Report (Oct 15), Anil's HbA1c has escalated to 8.2%, and fasting glucose is 165 mg/dL. In response, Dr. Gupta has prescribed a new medication: Metformin 500mg BD.";
+  
+  const { data: familyData } = useQuery({
+    queryKey: ['family'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:8000/v1/families/');
+      if (!res.ok) throw new Error("Failed");
+      const families = await res.json();
+      return families[0];
+    },
+    enabled: mode === 'live'
+  });
 
-  useEffect(() => {
-    if (phase === "searching") {
-       const timer = setInterval(() => {
-          setRetrievedCount(c => {
-             if (c >= 4) {
-                clearInterval(timer);
-                setTimeout(() => setPhase("answering"), 1000);
-                return c;
-             }
-             return c + 1;
-          });
-       }, 800);
-       return () => clearInterval(timer);
-    }
-  }, [phase]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const triggerSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+    
     setPhase("searching");
+    
+    if (mode === "presentation") {
+      setTimeout(() => setRetrievedDocs(prev => [...prev, "Diabetes Lab Report (Oct 15)"]), 1000);
+      setTimeout(() => setRetrievedDocs(prev => [...prev, "Vitals Baseline (Sep 02)"]), 1500);
+      setTimeout(() => setRetrievedDocs(prev => [...prev, "Consultation Notes (Dr. Gupta)"]), 2000);
+      setTimeout(() => setRetrievedDocs(prev => [...prev, "Current Medication: Metformin 500mg"]), 2500);
+      
+      setTimeout(() => {
+        setPhase("answering");
+        let i = 0;
+        const interval = setInterval(() => {
+          setAnswer(PRESENTATION_ANSWER.slice(0, i));
+          i++;
+          if (i > PRESENTATION_ANSWER.length) {
+            clearInterval(interval);
+            setTimeout(() => setPhase("done"), 1000);
+          }
+        }, 30);
+      }, 3500);
+    } else if (mode === "live" && familyData) {
+      try {
+        const convRes = await fetch('http://localhost:8000/v1/conversations/', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ family_id: familyData.id, member_id: familyData.primary_user_id || familyData.id })
+        });
+        const conv = await convRes.json();
+        
+        setTimeout(() => setRetrievedDocs(prev => [...prev, "Found: Latest Medical Report"]), 500);
+        setTimeout(() => setRetrievedDocs(prev => [...prev, "Found: Historical Vitals"]), 1000);
+        
+        setTimeout(async () => {
+           setPhase("answering");
+           try {
+             const streamRes = await fetch(`http://localhost:8000/v1/conversations/${conv.id}/messages`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ family_id: familyData.id, member_id: familyData.primary_user_id || familyData.id, text: query })
+             });
+             
+             if (!streamRes.body) throw new Error("No stream body");
+             
+             const reader = streamRes.body.getReader();
+             const decoder = new TextDecoder();
+             let streamedText = "";
+             
+             while (true) {
+               const { done, value } = await reader.read();
+               if (done) break;
+               streamedText += decoder.decode(value, { stream: true });
+               setAnswer(streamedText);
+             }
+             setTimeout(() => setPhase("done"), 1000);
+           } catch (e) {
+             console.error("Stream failed", e);
+             setAnswer("Error fetching live response. Graceful fallback activated: " + PRESENTATION_ANSWER);
+             setTimeout(() => setPhase("done"), 1000);
+           }
+        }, 1500);
+      } catch (e) {
+         console.error(e);
+         setAnswer("Failed to connect to backend. Fallback: " + PRESENTATION_ANSWER);
+         setPhase("done");
+      }
+    }
   };
-
-  const retrievedMemories = [
-    "Found: Diabetes Lab Report (Oct 15, HbA1c 8.2%)",
-    "Found: Medication History (Metformin 500mg)",
-    "Found: Previous Consultation (Sep 02, Vitals Normal)",
-    "Found: Timeline Events (Last 30 Days)"
-  ];
 
   return (
     <div className="w-full max-w-4xl flex flex-col items-center min-h-[70vh]">
@@ -83,7 +141,7 @@ export function Scene4Retrieval({ onNext }: { onNext: () => void }) {
             </div>
             
             <div className="space-y-5 relative pl-5 border-l-2 border-neutral-800/50 ml-5">
-               {retrievedMemories.slice(0, retrievedCount).map((mem, i) => (
+               {retrievedDocs.map((mem, i) => (
                  <motion.div 
                     key={i}
                     initial={{ opacity: 0, x: -20, filter: "blur(5px)" }}

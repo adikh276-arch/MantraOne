@@ -1,40 +1,96 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { HeartPulse, Stethoscope, FileText, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { HeartPulse, Stethoscope, FileText, ArrowRight, AlertTriangle, Activity } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
-export function Scene6Escalation({ onRestart }: { onRestart: () => void }) {
-  const [phase, setPhase] = useState<"alerting" | "briefing">("alerting");
+export function Scene6Escalation({ onRestart, mode }: { onRestart: () => void, mode: "live" | "presentation" }) {
+  const [showBrief, setShowBrief] = useState(false);
+  const [briefData, setBriefData] = useState<any>(null);
+
+  const PRESENTATION_BRIEF = {
+     brief: "Patient's HbA1c has sharply escalated to 8.2% (from 6.8% in previous checkup). Fasting glucose is currently 165 mg/dL. The patient reports worsening fatigue over the past 3 weeks.",
+     reason: "Evaluate immediate initiation of Metformin 500mg. Review patient's lifestyle and stress factors (sleep data indicates reduced hours over the past week)."
+  };
+
+  const { data: familyData } = useQuery({
+    queryKey: ['family'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:8000/v1/families/');
+      if (!res.ok) throw new Error("Failed");
+      const families = await res.json();
+      return families[0];
+    },
+    enabled: mode === 'live'
+  });
+
+  const escalationMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('http://localhost:8000/v1/escalations/trigger', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ family_id: familyData.id, member_id: familyData.primary_user_id || familyData.id })
+      });
+      if (!res.ok) throw new Error("Failed");
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      setBriefData(data);
+    },
+    onError: () => {
+      setBriefData(PRESENTATION_BRIEF);
+    }
+  });
 
   useEffect(() => {
-    if (phase === "alerting") {
-       setTimeout(() => setPhase("briefing"), 3000);
+    let t1: NodeJS.Timeout, t2: NodeJS.Timeout;
+    
+    if (mode === "presentation") {
+      t1 = setTimeout(() => {
+        setShowBrief(true);
+        setBriefData(PRESENTATION_BRIEF);
+      }, 3000);
+    } else if (mode === "live" && familyData) {
+      t1 = setTimeout(() => {
+        escalationMutation.mutate();
+        t2 = setTimeout(() => {
+           setShowBrief(true);
+        }, 1500);
+      }, 1500);
     }
-  }, [phase]);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [mode, familyData]);
 
   return (
     <div className="w-full max-w-4xl flex flex-col items-center">
-      {phase === "alerting" && (
+      {!showBrief && (
         <motion.div 
           key="alerting"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
           className="flex flex-col items-center justify-center min-h-[50vh]"
         >
-          <div className="relative">
-             <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-20" />
-             <div className="bg-red-500/10 p-6 rounded-full border border-red-500/30 text-red-500 relative z-10">
-                <HeartPulse className="w-16 h-16 animate-pulse" />
-             </div>
-          </div>
-          <h2 className="text-3xl font-medium text-red-400 mt-8 mb-2">Automated Escalation Triggered</h2>
-          <p className="text-neutral-400">Coordinator detected critical HbA1c deviation (8.2%)</p>
-          <p className="text-neutral-500 mt-4 animate-pulse">Generating Doctor Consultation Brief...</p>
+           <motion.div 
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="w-32 h-32 bg-red-600/20 rounded-full flex items-center justify-center mb-8"
+           >
+              <div className="w-20 h-20 bg-red-600/40 rounded-full flex items-center justify-center backdrop-blur-sm">
+                 <AlertTriangle className="w-10 h-10 text-red-500" />
+              </div>
+           </motion.div>
+           <h2 className="text-3xl font-medium text-white mb-3">Critical Escalation Triggered</h2>
+           <p className="text-neutral-400 text-lg">System has detected a convergence of risk factors.</p>
         </motion.div>
       )}
 
-      {phase === "briefing" && (
+      {showBrief && (
         <motion.div 
           key="briefing"
           initial={{ opacity: 0, y: 30 }}
@@ -72,29 +128,15 @@ export function Scene6Escalation({ onRestart }: { onRestart: () => void }) {
                      <FileText className="w-5 h-5 text-neutral-500" /> AI Executive Summary
                    </h4>
                    <div className="text-neutral-300 leading-relaxed text-lg bg-neutral-900/50 p-8 rounded-3xl border border-neutral-800/80 font-light">
-                     Patient's HbA1c has sharply escalated to <strong className="text-red-400 font-semibold">8.2%</strong> (from 6.8% in previous checkup). Fasting glucose is currently 165 mg/dL. The patient reports worsening fatigue over the past 3 weeks. 
+                     {briefData?.brief || PRESENTATION_BRIEF.brief}
                    </div>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-                   <h4 className="text-xl text-white font-medium mb-4">Contextual History</h4>
-                   <ul className="space-y-4 text-neutral-400 list-none font-light">
-                      <li className="flex items-start gap-4">
-                         <div className="mt-1 w-2 h-2 rounded-full bg-neutral-700" />
-                         <div><strong className="text-neutral-300 font-medium">Sep 02:</strong> Vitals were stable. No medication was required at that time.</div>
-                      </li>
-                      <li className="flex items-start gap-4">
-                         <div className="mt-1 w-2 h-2 rounded-full bg-red-500" />
-                         <div><strong className="text-neutral-300 font-medium">Oct 15:</strong> Labs returned abnormal. Metformin 500mg BD recommended.</div>
-                      </li>
-                   </ul>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.0 }} className="bg-blue-950/20 border border-blue-500/30 rounded-3xl p-8 mt-12 relative overflow-hidden">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }} className="bg-blue-950/20 border border-blue-500/30 rounded-3xl p-8 mt-12 relative overflow-hidden">
                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent pointer-events-none" />
                    <h4 className="text-blue-400 font-medium mb-3 text-lg">Recommended Action for Doctor</h4>
                    <p className="text-blue-200 leading-relaxed font-light text-lg">
-                     Evaluate immediate initiation of Metformin 500mg. Review patient's lifestyle and stress factors (sleep data indicates reduced hours over the past week).
+                     {briefData?.reason || PRESENTATION_BRIEF.reason}
                    </p>
                 </motion.div>
              </div>

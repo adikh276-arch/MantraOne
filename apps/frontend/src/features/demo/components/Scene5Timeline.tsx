@@ -12,35 +12,17 @@ export function Scene5Timeline({ onNext }: { onNext: () => void }) {
       </div>
 
       <div className="w-full max-w-2xl relative">
-         <div className="absolute top-0 bottom-0 left-[39px] w-[2px] bg-neutral-800" />
-         
-         <div className="space-y-12">
+        <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[38px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-800 before:to-transparent">
+          {events.map((item: any, idx: number) => (
             <TimelineItem 
-               icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
-               date="Today (Oct 15, 2026)"
-               title="HbA1c Elevated to 8.2%"
-               description="New diagnosis of uncontrolled Type 2 Diabetes based on recent lab report. Metformin 500mg prescribed."
-               badge="Diabetes Lab Report"
-               delay={0.2}
-               active
+               key={item.id} 
+               {...item} 
+               delay={idx * 0.4} 
+               icon={item.type === 'document' ? <FileText className="w-5 h-5" /> : item.type === 'signal' ? <Activity className="w-5 h-5" /> : <HeartPulse className="w-5 h-5" />}
+               active={idx === 0}
             />
-            <TimelineItem 
-               icon={<CheckCircle className="w-5 h-5 text-green-500" />}
-               date="Sep 02, 2026"
-               title="Routine Consultation"
-               description="Vitals stable. Fasting glucose at 105 mg/dL. No medication required at this time."
-               badge="Dr. Gupta Visit"
-               delay={0.6}
-            />
-            <TimelineItem 
-               icon={<FileText className="w-5 h-5 text-blue-500" />}
-               date="Jan 15, 2026"
-               title="Annual Physical"
-               description="Overall health marked as excellent. Recommended lifestyle changes for weight management."
-               badge="Annual Review"
-               delay={1.0}
-            />
-         </div>
+          ))}
+        </div>
       </div>
 
       <motion.div 
@@ -53,7 +35,7 @@ export function Scene5Timeline({ onNext }: { onNext: () => void }) {
            onClick={onNext}
            className="bg-red-600/10 border border-red-600/50 text-red-500 hover:bg-red-600/20 px-8 py-4 rounded-full font-medium transition-colors flex items-center gap-2"
          >
-           <AlertTriangle className="w-5 h-5" /> Simulate Escalation Trigger
+           <Activity className="w-5 h-5" /> Simulate Escalation Trigger
          </button>
       </motion.div>
     </div>
