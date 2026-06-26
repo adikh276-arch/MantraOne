@@ -5,7 +5,7 @@ from typing import Any
 from infrastructure.database.models import Document
 from core.repositories.document_repository import DocumentRepository
 from core.providers.encryption_service import EncryptionService
-from infrastructure.cloud.storage import StorageProvider
+
 
 class DocumentService:
     def __init__(self, db: AsyncSession, storage_provider: Any) -> None:

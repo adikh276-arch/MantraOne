@@ -23,11 +23,13 @@ class SignalSeverity(str, Enum):
         return {"low": 1, "medium": 2, "high": 3, "critical": 4}[self.value]
     
     def __gt__(self, other: object) -> bool:
-        if not isinstance(other, SignalSeverity): return NotImplemented
+        if not isinstance(other, SignalSeverity):
+            return NotImplemented
         return self.numeric_value > other.numeric_value
     
     def __ge__(self, other: object) -> bool:
-        if not isinstance(other, SignalSeverity): return NotImplemented
+        if not isinstance(other, SignalSeverity):
+            return NotImplemented
         return self.numeric_value >= other.numeric_value
 
 class SignalType(str, Enum):
