@@ -7,7 +7,7 @@ from api.middleware.error_handler import exception_handlers
 from api.routers.v1 import (
     families, members, checkins, health_records,
     medications, documents, consultations, escalations,
-    timeline, memory, internal
+    timeline, conversations, internal
 )
 
 app = FastAPI(
@@ -39,5 +39,5 @@ app.include_router(documents.router, prefix="/v1/documents", tags=["Documents"])
 app.include_router(consultations.router, prefix="/v1/consultations", tags=["Consultations"])
 app.include_router(escalations.router, prefix="/v1/escalations", tags=["Escalations"])
 app.include_router(timeline.router, prefix="/v1/timeline", tags=["Timeline"])
-app.include_router(memory.router, prefix="/v1/memory", tags=["Memory"])
+app.include_router(conversations.router, prefix="/v1/conversations", tags=["Conversations"])
 app.include_router(internal.router, prefix="/v1/internal", tags=["Internal"])

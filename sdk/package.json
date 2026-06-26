@@ -1,0 +1,13 @@
+{
+  "name": "mantraone-sdk",
+  "version": "1.0.0",
+  "scripts": {
+    "generate": "openapi-typescript-codegen -i ./openapi.json -o ./src/sdk -c fetch",
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "openapi-typescript-codegen": "^0.29.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -287,3 +287,22 @@ class AuditLog(Base):
     result: Mapped[str] = mapped_column(String(50), nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
     __table_args__ = (Index("idx_audit_family", "family_id", "created_at"), Index("idx_audit_actor", "actor_firebase_uid", "created_at"),)
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    family_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
+    member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
+    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    __table_args__ = (Index("idx_conversations_member", "member_id", "updated_at"),)
+
+class Message(Base):
+    __tablename__ = "messages"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    conversation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)  # 'user', 'assistant', 'system'
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
+    __table_args__ = (Index("idx_messages_conversation", "conversation_id", "created_at"),)
