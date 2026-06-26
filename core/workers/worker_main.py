@@ -39,7 +39,7 @@ async def process_events_loop(ctx: dict) -> None:
             logger.error("event_loop_error", error=str(exc))
             await asyncio.sleep(1)
 
-class WorkerSettings(worker.Worker):
+class WorkerSettings:
     redis_settings = worker.RedisSettings(host=settings.redis_url.split("://")[1].split(":")[0], port=6379)
     on_startup = startup
     on_shutdown = shutdown

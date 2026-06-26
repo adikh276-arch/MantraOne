@@ -14,7 +14,7 @@ app = FastAPI(
     title="MantraOne API",
     version=settings.app_version,
     description="Longitudinal Family Health Memory System",
-    exception_handlers=exception_handlers,
+    exception_handlers=exception_handlers,  # type: ignore
 )
 
 app.add_middleware(
@@ -27,7 +27,7 @@ app.add_middleware(
 app.add_middleware(AuthMiddleware)
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     return {"status": "ok", "version": settings.app_version}
 
 app.include_router(families.router, prefix="/v1/families", tags=["Families"])
