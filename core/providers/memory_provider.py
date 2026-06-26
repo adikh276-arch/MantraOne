@@ -32,7 +32,7 @@ class MemoryProvider(IMemoryProvider):
         # Cognee accepts a list of strings or data objects
         await cognee.add([content], dataset_name=dataset_name)
         await cognee.cognify(datasets=[dataset_name])
-        return str(metadata.source_id)
+        return str(metadata.source_entity_id)
 
     async def recall(self, query: str, family_id: UUID, member_id: UUID, limit: int = 10, min_confidence: float = 0.5) -> list[MemoryFragment]:
         await self._ensure_configured()

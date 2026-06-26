@@ -29,6 +29,7 @@ class HealthMetricRecordedEvent(BaseHealthEvent):
     family_id: UUID
     metric_type: str
     recorded_at: datetime
+    value: float = 0.0
 
 class MedicationLoggedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.MEDICATION_LOGGED

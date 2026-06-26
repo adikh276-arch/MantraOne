@@ -3,8 +3,7 @@ import json
 import uuid
 import structlog
 from datetime import datetime, timezone, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from config.settings import settings
 from infrastructure.database.session import Base
 from infrastructure.database.models import Family, FamilyMember
@@ -18,7 +17,7 @@ logger = structlog.get_logger()
 
 # Setup Local DB and Redis
 engine = create_async_engine(settings.database_url, echo=False)
-AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 class MockStorageProvider:
     async def upload(self, **kwargs) -> str:
@@ -117,11 +116,12 @@ async def run_demo():
         from core.events.types import HealthMetricRecordedEvent
         
         sleep_event = HealthMetricRecordedEvent(
+            metric_id=uuid.uuid4(),
             family_id=family.id,
             member_id=dad.id,
             metric_type="sleep_duration",
             value=4.0,
-            timestamp=datetime.now(timezone.utc)
+            recorded_at=datetime.now(timezone.utc)
         )
         
         watcher = SleepWatcher()

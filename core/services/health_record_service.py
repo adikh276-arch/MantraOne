@@ -34,11 +34,12 @@ class HealthRecordService:
         
         if self._publisher:
             event = HealthMetricRecordedEvent(
+                metric_id=metric.id,
                 family_id=family_id,
                 member_id=member_id,
                 metric_type=metric_type,
                 value=value_numeric or 0.0,
-                timestamp=recorded_at
+                recorded_at=recorded_at
             )
             await self._publisher.publish(event)
             

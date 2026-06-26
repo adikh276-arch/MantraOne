@@ -17,15 +17,15 @@ async def run_evaluation():
         async def recall(self, query: str, *args, **kwargs):
             query = query.lower()
             if "medicines" in query or "stopped" in query:
-                class MockFrag:
+                class MockFrag1:
                     content = "3. STOP taking Ibuprofen daily."
                     score = 0.95
-                return [MockFrag()]
+                return [MockFrag1()]
             elif "sleep" in query:
-                class MockFrag:
+                class MockFrag2:
                     content = "Patient reports worsening insomnia over the past 3 weeks, sleeping only 4 hours per night."
                     score = 0.88
-                return [MockFrag()]
+                return [MockFrag2()]
             return []
 
     memory = MockMemoryProvider()

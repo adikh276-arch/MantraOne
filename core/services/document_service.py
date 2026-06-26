@@ -48,8 +48,11 @@ class DocumentService:
     async def process_document(self, doc: Document, content: bytes) -> Document:
         import pdfplumber
         import io
-        from core.domain.entities import HealthMemoryMetadata
+        from core.domain.entities import HealthMemoryMetadata, MemoryType
         from datetime import datetime
+        import structlog
+        
+        logger = structlog.get_logger()
         
         extracted_text = ""
         if doc.mime_type == "application/pdf":
@@ -58,17 +61,17 @@ class DocumentService:
                     pages = [p.extract_text() or "" for p in pdf.pages]
                     extracted_text = "\n".join(pages)
             except Exception as e:
+                logger.error("pdf_extraction_failed", error=str(e), document_id=doc.id)
                 doc.processing_status = "failed"
-                doc.error_message = f"PDF extraction failed: {str(e)}"
                 return await self._repo.save(doc)
         else:
+            logger.error("unsupported_mime_type", mime_type=doc.mime_type, document_id=doc.id)
             doc.processing_status = "failed"
-            doc.error_message = "Unsupported mime type for extraction"
             return await self._repo.save(doc)
 
         if not extracted_text.strip():
+            logger.error("no_text_extracted", document_id=doc.id)
             doc.processing_status = "failed"
-            doc.error_message = "No text extracted from document"
             return await self._repo.save(doc)
 
         doc.extracted_text = extracted_text
@@ -78,8 +81,9 @@ class DocumentService:
         metadata = HealthMemoryMetadata(
             family_id=doc.family_id,
             member_id=doc.member_id,
-            source_type="document",
-            source_id=doc.id,
+            memory_type=MemoryType.DOCUMENT,
+            source_entity_type="document",
+            source_entity_id=doc.id,
             timestamp=datetime.now()
         )
         try:
@@ -87,6 +91,6 @@ class DocumentService:
             doc.memory_ingested = True
             doc.memory_ingested_at = datetime.now()
         except Exception as e:
-            doc.error_message = f"Memory ingestion failed: {str(e)}"
+            logger.error("memory_ingestion_failed", error=str(e), document_id=doc.id)
             
         return await self._repo.save(doc)
