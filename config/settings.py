@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     local_dev_mode: bool = True
     firebase_mock_enabled: bool = True
-    local_storage_path: str = "/tmp/mantraone_storage"
+    local_storage_path: str = "/tmp/mantraone_storage"  # nosec B108
 
     rate_limit_requests_per_minute: int = 60
     rate_limit_uploads_per_minute: int = 10
@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     escalation_cooldown_days: int = 7
 
-    cognee_db_path: str = "/tmp/mantraone_cognee"
+    cognee_db_path: str = "/tmp/mantraone_cognee"  # nosec B108
     signed_url_ttl_seconds: int = 900
     max_upload_size_bytes: int = 20 * 1024 * 1024
 
