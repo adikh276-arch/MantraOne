@@ -1,11 +1,9 @@
 from __future__ import annotations
 import cognee
-from cognee.api.v1.search import SearchType
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from core.domain.entities import HealthMemoryMetadata, MemoryFragment, HealthContext, ForgetResult
-from core.domain.enums import MemoryType, MemoryOperationType
 from config.settings import settings
 import structlog
 from core.contracts.memory import IMemoryProvider
@@ -17,7 +15,8 @@ class MemoryProvider(IMemoryProvider):
         self._configured = False
 
     async def _ensure_configured(self) -> None:
-        if self._configured: return
+        if self._configured:
+            return
         await cognee.config.set_llm_config({"llm_provider": "custom", "llm_model": settings.groq_model, "llm_api_key": settings.groq_api_key, "llm_endpoint": settings.groq_base_url})
         db_path = Path(settings.cognee_db_path)
         db_path.mkdir(parents=True, exist_ok=True)

@@ -19,13 +19,15 @@ class EncryptionService(IEncryptionProvider):
             self._aesgcm = AESGCM(_DEV_KEY)
 
     def encrypt(self, plaintext: str) -> str:
-        if not plaintext: return plaintext
+        if not plaintext:
+            return plaintext
         nonce = os.urandom(12)
         ct = self._aesgcm.encrypt(nonce, plaintext.encode("utf-8"), None)
         return base64.b64encode(nonce + ct).decode("ascii")
 
     def decrypt(self, ciphertext: str) -> str:
-        if not ciphertext: return ciphertext
+        if not ciphertext:
+            return ciphertext
         raw = base64.b64decode(ciphertext.encode("ascii"))
         nonce, ct = raw[:12], raw[12:]
         return self._aesgcm.decrypt(nonce, ct, None).decode("utf-8")
@@ -40,5 +42,6 @@ class EncryptionService(IEncryptionProvider):
         return self.encrypt(json.dumps(data, default=str))
 
     def decrypt_json(self, ciphertext: str) -> dict:
-        if not ciphertext: return {}
+        if not ciphertext:
+            return {}
         return json.loads(self.decrypt(ciphertext))

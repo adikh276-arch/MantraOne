@@ -1,7 +1,6 @@
 from __future__ import annotations
 from uuid import UUID
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import FamilyMember
 from core.repositories.base import BaseRepository
 
@@ -10,7 +9,8 @@ class MemberRepository(BaseRepository[FamilyMember]):
 
     async def get_by_firebase_uid(self, firebase_uid: str, family_id: UUID | None = None) -> FamilyMember | None:
         conditions = [FamilyMember.firebase_uid == firebase_uid, FamilyMember.deleted_at.is_(None)]
-        if family_id: conditions.append(FamilyMember.family_id == family_id)
+        if family_id:
+            conditions.append(FamilyMember.family_id == family_id)
         result = await self._db.execute(select(FamilyMember).where(*conditions))
         return result.scalar_one_or_none()
 
@@ -27,7 +27,7 @@ class MemberRepository(BaseRepository[FamilyMember]):
         result = await self._db.execute(
             select(FamilyMember).where(
                 FamilyMember.family_id == family_id,
-                FamilyMember.is_primary == True,
+                FamilyMember.is_primary.is_(True),
                 FamilyMember.deleted_at.is_(None),
             )
         )

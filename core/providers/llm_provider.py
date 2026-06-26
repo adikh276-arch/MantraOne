@@ -35,7 +35,8 @@ class LLMProvider(ILLMProvider):
         text = await self.complete(system_prompt, user_prompt, max_tokens, 0.1)
         start = text.find("{")
         end = text.rfind("}") + 1
-        if start == -1 or end == 0: raise ValueError(f"Invalid JSON: {text[:200]}")
+        if start == -1 or end == 0:
+            raise ValueError(f"Invalid JSON: {text[:200]}")
         return json.loads(text[start:end])
 
     async def generate_checkin_question(self, domain: str, member_name: str, context: str, recent_signals: list[dict]) -> str:

@@ -1,4 +1,3 @@
-import os
 import re
 import yaml
 from pathlib import Path
@@ -16,7 +15,8 @@ def main():
     errors = 0
     for rule_name, rule in config.get('rules', {}).items():
         pattern = rule.get('pattern')
-        if not pattern: continue
+        if not pattern:
+            continue
         
         # very simple mock validation
         regex = re.compile(pattern)
@@ -35,7 +35,8 @@ def main():
                     files_to_check.append(Path(t))
                     
         for pyfile in files_to_check:
-            if not pyfile.exists() or pyfile.is_dir() or str(pyfile).startswith("venv") or str(pyfile).startswith(".venv"): continue
+            if not pyfile.exists() or pyfile.is_dir() or str(pyfile).startswith("venv") or str(pyfile).startswith(".venv"):
+                continue
             str_path = str(pyfile).replace('\\', '/')
             if allowed and any(a in str_path for a in allowed):
                 continue

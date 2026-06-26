@@ -5,7 +5,6 @@ from infrastructure.database.models import CoordinatorDecision
 from core.repositories.watcher_signal_repository import WatcherSignalRepository
 from core.repositories.coordinator_decision_repository import CoordinatorDecisionRepository
 from core.providers.llm_provider import LLMProvider
-from core.domain.enums import WatcherDomain
 
 class CoordinatorService:
     def __init__(self, db: AsyncSession) -> None:
@@ -16,8 +15,7 @@ class CoordinatorService:
 
     async def select_daily_signal(self, member_id: UUID, family_id: UUID) -> CoordinatorDecision | None:
         # Pseudo-implementation matching the plan
-        from datetime import datetime, timezone
-        
+                
         # In a full implementation, we'd rank signals and pick the top one.
         # For now, just generate a record.
         signals = await self._signal_repo.list_unsurfaced(family_id, member_id)

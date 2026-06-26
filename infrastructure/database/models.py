@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, date
 from typing import Optional
 from sqlalchemy import (
-    String, Boolean, Integer, Float, Text, Date, DateTime,
+    String, Boolean, Integer, Float, Text, Date,
     ForeignKey, UniqueConstraint, Index, BigInteger, func,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY, TIMESTAMPTZ

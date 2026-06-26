@@ -1,8 +1,7 @@
 from __future__ import annotations
-from datetime import datetime, timedelta, timezone, date
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import WatcherSignal, HealthBaseline
 from core.repositories.base import BaseRepository
 
@@ -15,7 +14,7 @@ class WatcherSignalRepository(BaseRepository[WatcherSignal]):
             select(WatcherSignal).where(
                 WatcherSignal.family_id == family_id,
                 WatcherSignal.member_id == member_id,
-                WatcherSignal.surfaced == False,
+                WatcherSignal.surfaced.is_(False),
                 WatcherSignal.created_at >= cutoff,
             ).order_by(WatcherSignal.created_at.desc())
         )

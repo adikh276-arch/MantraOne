@@ -1,6 +1,5 @@
 from __future__ import annotations
 import structlog
-from typing import Any
 from core.domain.enums import WatcherDomain
 from core.events.types import BaseHealthEvent
 

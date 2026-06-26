@@ -2,7 +2,6 @@ from __future__ import annotations
 from datetime import date
 from uuid import UUID
 from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import CoordinatorDecision
 from core.repositories.base import BaseRepository
 

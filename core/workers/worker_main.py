@@ -3,7 +3,7 @@ import asyncio
 from arq import worker
 from config.settings import settings
 import structlog
-from redis.asyncio import Redis, ConnectionPool
+from redis.asyncio import Redis
 from infrastructure.cache.redis_client import get_redis_pool
 from core.events.subscriber import EventSubscriber
 

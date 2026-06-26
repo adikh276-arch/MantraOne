@@ -1,8 +1,7 @@
 from __future__ import annotations
-import json
 from redis.asyncio import Redis
 from core.events.types import BaseHealthEvent
-from infrastructure.cache.redis_client import STREAM_NAME, publish_event
+from infrastructure.cache.redis_client import publish_event
 import structlog
 from core.contracts.event import IEventPublisher
 

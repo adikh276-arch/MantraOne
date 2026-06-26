@@ -1,6 +1,5 @@
 from __future__ import annotations
 from uuid import UUID
-from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import DailyCheckin
 from core.repositories.checkin_repository import CheckinRepository

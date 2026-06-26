@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import AsyncGenerator, Annotated
+from typing import AsyncGenerator
 from fastapi import Request, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.session import get_async_session

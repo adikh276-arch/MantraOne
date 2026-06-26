@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, date
 from uuid import UUID
 from pydantic import BaseModel, Field
@@ -7,7 +7,7 @@ from datetime import timezone
 from core.domain.enums import (
     WatcherDomain, SignalSeverity, SignalType, TrendDirection,
     MemoryType, UrgencyLevel, EscalationStatus, MemberRelationship,
-    SelectionReason, MemoryOperationType,
+    SelectionReason,
 )
 
 @dataclass

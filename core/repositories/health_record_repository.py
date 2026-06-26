@@ -2,7 +2,6 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import HealthMetric, Medication, MedicationLog, Diagnosis
 from core.repositories.base import BaseRepository
 
@@ -16,8 +15,10 @@ class HealthMetricRepository(BaseRepository[HealthMetric]):
             HealthMetric.metric_type == metric_type,
             HealthMetric.deleted_at.is_(None),
         ]
-        if start_date: conditions.append(HealthMetric.recorded_at >= start_date)
-        if end_date: conditions.append(HealthMetric.recorded_at <= end_date)
+        if start_date:
+            conditions.append(HealthMetric.recorded_at >= start_date)
+        if end_date:
+            conditions.append(HealthMetric.recorded_at <= end_date)
         result = await self._db.execute(select(HealthMetric).where(*conditions).order_by(HealthMetric.recorded_at.desc()).limit(limit))
         return list(result.scalars().all())
 
@@ -40,7 +41,7 @@ class MedicationRepository(BaseRepository[Medication]):
             select(Medication).where(
                 Medication.member_id == member_id,
                 Medication.family_id == family_id,
-                Medication.is_active == True,
+                Medication.is_active.is_(True),
                 Medication.deleted_at.is_(None),
             )
         )

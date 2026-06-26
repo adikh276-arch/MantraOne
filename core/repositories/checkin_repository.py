@@ -2,7 +2,6 @@ from __future__ import annotations
 from datetime import date
 from uuid import UUID
 from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import DailyCheckin
 from core.repositories.base import BaseRepository
 
@@ -43,7 +42,7 @@ class CheckinRepository(BaseRepository[DailyCheckin]):
         result = await self._db.execute(
             select(DailyCheckin).where(
                 DailyCheckin.family_id == family_id,
-                DailyCheckin.memory_ingested == False,
+                DailyCheckin.memory_ingested.is_(False),
             ).order_by(DailyCheckin.created_at).limit(limit)
         )
         return list(result.scalars().all())

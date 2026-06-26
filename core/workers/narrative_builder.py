@@ -1,6 +1,5 @@
 from __future__ import annotations
 import structlog
-from uuid import UUID
 
 logger = structlog.get_logger()
 
