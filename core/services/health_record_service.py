@@ -1,6 +1,6 @@
 from __future__ import annotations
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import HealthMetric, Medication, MedicationLog
 from core.repositories.health_record_repository import HealthMetricRepository, MedicationRepository, MedicationLogRepository
@@ -28,7 +28,7 @@ class HealthRecordService:
         )
         return await self._metric_repo.save(metric)
 
-    async def add_medication(self, member_id: UUID, family_id: UUID, name: str, start_date: datetime.date, dosage: str | None = None, frequency: str | None = None) -> Medication:
+    async def add_medication(self, member_id: UUID, family_id: UUID, name: str, start_date: date, dosage: str | None = None, frequency: str | None = None) -> Medication:
         med = Medication(
             family_id=family_id,
             member_id=member_id,

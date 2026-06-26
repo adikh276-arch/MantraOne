@@ -17,9 +17,9 @@ class BaseRepository(Generic[ModelT]):
     async def get_by_id(self, entity_id: UUID, family_id: UUID) -> ModelT | None:
         result = await self._db.execute(
             select(self.model).where(
-                self.model.id == entity_id,
-                self.model.family_id == family_id,
-                self.model.deleted_at.is_(None) if hasattr(self.model, "deleted_at") else True,
+                getattr(self.model, 'id') == entity_id,  # type: ignore
+                getattr(self.model, 'family_id') == family_id,  # type: ignore
+                getattr(self.model, "deleted_at").is_(None) if hasattr(self.model, "deleted_at") else True,  # type: ignore
             )
         )
         return result.scalar_one_or_none()
@@ -31,5 +31,5 @@ class BaseRepository(Generic[ModelT]):
         return entity
 
     async def soft_delete(self, entity: ModelT) -> None:
-        entity.deleted_at = datetime.now(timezone.utc)
+        setattr(entity, 'deleted_at', datetime.now(timezone.utc))  # type: ignore
         await self._db.flush()

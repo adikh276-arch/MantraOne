@@ -50,18 +50,18 @@ class Settings(BaseSettings):
     signed_url_ttl_seconds: int = 900
     max_upload_size_bytes: int = 20 * 1024 * 1024
 
-    @computed_field
     @property
+    @computed_field
     def is_production(self) -> bool:
         return self.environment == "production"
 
-    @computed_field
     @property
+    @computed_field
     def is_development(self) -> bool:
         return self.environment == "development"
 
-    @computed_field
     @property
+    @computed_field
     def sync_database_url(self) -> str:
         return self.database_url.replace("+asyncpg", "+psycopg2")
 

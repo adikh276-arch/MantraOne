@@ -1,17 +1,18 @@
 from __future__ import annotations
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any
 from infrastructure.database.models import Document
 from core.repositories.document_repository import DocumentRepository
 from core.providers.encryption_service import EncryptionService
 from infrastructure.cloud.storage import StorageProvider
 
 class DocumentService:
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(self, db: AsyncSession, storage_provider: Any) -> None:
         self._db = db
         self._repo = DocumentRepository(db)
         self._enc = EncryptionService()
-        self._storage = StorageProvider()
+        self._storage = storage_provider
 
     async def initiate_upload(self, content: bytes, filename: str, document_type: str, member_id: UUID, family_id: UUID, mime_type: str) -> Document:
         import uuid
@@ -27,7 +28,7 @@ class DocumentService:
             extension=extension,
         )
         
-        checksum = self._storage.compute_checksum(content)
+        checksum = self._storage.compute_checksum(content)  # type: ignore
         
         doc = Document(
             family_id=family_id,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+from typing import Any
 from redis.asyncio import Redis
 from core.events.types import BaseHealthEvent, EVENT_TYPE_MAP
 from core.domain.enums import HealthEventType
@@ -24,7 +25,7 @@ class EventSubscriber:
         count: int = 10,
         block_ms: int = 1000,
     ) -> list[tuple[str, BaseHealthEvent]]:
-        raw = await self._redis.xreadgroup(
+        raw: list[Any] = await self._redis.xreadgroup(
             groupname=self.group_name,
             consumername=self.consumer_name,
             streams={STREAM_NAME: ">"},
@@ -32,7 +33,7 @@ class EventSubscriber:
             block=block_ms,
         )
 
-        results = []
+        results: list[tuple[str, BaseHealthEvent]] = []
         if not raw:
             return results
 
@@ -83,7 +84,7 @@ class EventSubscriber:
                 start_id="0",
                 count=count,
             )
-            results = []
+            results: list[tuple[str, BaseHealthEvent]] = []
             if not claimed or not claimed[1]:
                 return results
             for entry_id, fields in claimed[1]:

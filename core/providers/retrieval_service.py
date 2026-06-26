@@ -24,7 +24,7 @@ class RetrievalService:
 
     async def build_doctor_brief_context(self, member_id: UUID, family_id: UUID, triggering_domains: list[WatcherDomain], lookback_days: int = 90) -> HealthContext:
         domain_names = [d.value for d in triggering_domains]
-        return await self._memory.get_health_context(member_id, family_id, domain_names, lookback_days)
+        return await self._memory.get_health_context(member_id=member_id, family_id=family_id, include_domains=domain_names, lookback_days=lookback_days)
 
     async def search_by_query(self, query: str, member_id: UUID, family_id: UUID, limit: int = 10) -> list[MemoryFragment]:
         return await self._memory.recall(query=query, family_id=family_id, member_id=member_id, limit=limit)

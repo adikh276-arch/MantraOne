@@ -6,9 +6,12 @@ from sqlalchemy import (
     String, Boolean, Integer, Float, Text, Date,
     ForeignKey, UniqueConstraint, Index, BigInteger, func,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY, TIMESTAMPTZ
+from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from infrastructure.database.session import Base
+from sqlalchemy import DateTime
+
+TIMESTAMPTZ = DateTime(timezone=True)
 
 class Family(Base):
     __tablename__ = "families"
@@ -44,7 +47,7 @@ class FamilyMember(Base):
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-    family: Mapped[Family] = relationship(back_populates="members", lazy="noload")
+    family: Mapped[Family] = relationship(back_populates="members", lazy="noload")  # type: ignore
     __table_args__ = (Index("idx_members_family", "family_id"), Index("idx_members_firebase_uid", "firebase_uid"),)
 
 class HealthBaseline(Base):
