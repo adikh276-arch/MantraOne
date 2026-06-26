@@ -1,12 +1,12 @@
 from core.workers.watchers.base_watcher import BaseWatcher
 from core.events.types import BaseHealthEvent
 from core.domain.enums import WatcherDomain
+from core.domain.entities import WatcherSignalEntity
 
 class SleepWatcher(BaseWatcher):
     domain = WatcherDomain.SLEEP
     
-    async def _process(self, member_id: str, family_id: str, events: list[BaseHealthEvent]) -> "WatcherSignalEntity" | None:
-        from core.domain.entities import WatcherSignalEntity
+    async def _process(self, member_id: str, family_id: str, events: list[BaseHealthEvent]) -> WatcherSignalEntity | None:
         from core.domain.enums import SignalType, SignalSeverity, TrendDirection
         from datetime import datetime, timezone
         from uuid import uuid4
