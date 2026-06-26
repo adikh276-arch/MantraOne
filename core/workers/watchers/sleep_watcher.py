@@ -1,4 +1,5 @@
 from core.workers.watchers.base_watcher import BaseWatcher
+from core.events.types import BaseHealthEvent
 from core.domain.enums import WatcherDomain
 
 class SleepWatcher(BaseWatcher):

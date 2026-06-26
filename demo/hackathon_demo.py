@@ -1,10 +1,8 @@
 import asyncio
-import os
-import io
 import json
 import uuid
 import structlog
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from config.settings import settings
@@ -92,7 +90,7 @@ async def run_demo():
             family_id=family.id,
             mime_type="application/pdf"
         )
-        print(f"    -> Processing document and extracting text...")
+        print("    -> Processing document and extracting text...")
         processed_doc = await doc_service.process_document(doc, pdf_bytes)
         if processed_doc.processing_status == "failed":
             print(f"    -> [ERROR] {processed_doc.error_message}")
@@ -158,6 +156,7 @@ async def run_demo():
     print("    -> Multiple risk factors intersect (Poor Sleep + Stress)...")
     async with AsyncSessionLocal() as db:
         from core.domain.enums import WatcherDomain, SignalType, SignalSeverity, TrendDirection
+        from core.domain.entities import WatcherSignalEntity
         
         stress_signal = WatcherSignalEntity(
             id=uuid.uuid4(),

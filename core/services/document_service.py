@@ -83,7 +83,7 @@ class DocumentService:
             timestamp=datetime.now()
         )
         try:
-            memory_id = await self._memory.remember(content=extracted_text, metadata=metadata)
+            await self._memory.remember(content=extracted_text, metadata=metadata)
             doc.memory_ingested = True
             doc.memory_ingested_at = datetime.now()
         except Exception as e:
