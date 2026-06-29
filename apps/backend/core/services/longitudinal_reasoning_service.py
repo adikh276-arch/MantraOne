@@ -10,6 +10,7 @@ from core.providers.llm_provider import LLMProvider
 from pydantic import BaseModel, Field
 import json
 
+
 class LongitudinalObservationSchema(BaseModel):
     trends: List[str] = Field(description="Structured trends over the period.")
     medication_effectiveness: List[str] = Field(description="Observations on medication efficacy.")
@@ -18,12 +19,13 @@ class LongitudinalObservationSchema(BaseModel):
     improvements: List[str] = Field(description="Areas showing improvement.")
     regressions: List[str] = Field(description="Areas showing regression.")
 
+
 class LongitudinalReasoningService:
     """
     Reasons across time (30/90/365 days).
     Outputs structured observations, NEVER prose.
     """
-    
+
     SYSTEM_PROMPT = """You are a clinical reasoning engine. 
     Analyze the health timeline provided and output strictly structured JSON matching the requested schema.
     Focus on trends, effectiveness, progression, and regressions over the specified time window.
@@ -39,37 +41,42 @@ class LongitudinalReasoningService:
         Returns structured observations.
         """
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
-        
+
         res = await self._db.execute(
             select(HealthInsight)
             .where(HealthInsight.member_id == member_id, HealthInsight.created_at >= cutoff_date)
             .order_by(HealthInsight.created_at.asc())
         )
         insights = res.scalars().all()
-        
+
         if not insights:
             return LongitudinalObservationSchema(
-                trends=[], medication_effectiveness=[], disease_progression=[],
-                new_risks=[], improvements=[], regressions=[]
+                trends=[],
+                medication_effectiveness=[],
+                disease_progression=[],
+                new_risks=[],
+                improvements=[],
+                regressions=[],
             ).model_dump()
-            
+
         # Build timeline context
         timeline_context = []
         for i in insights:
             timeline_context.append(f"[{i.created_at.date()}] {i.insight_type.upper()}: {i.description}")
-            
+
         prompt = f"Time window: Last {days} days.\nTimeline:\n" + "\n".join(timeline_context)
-        
+
         try:
             raw_dict = await self._llm.complete_structured(
-                self.SYSTEM_PROMPT,
-                prompt,
-                response_schema=LongitudinalObservationSchema,
-                max_tokens=1000
+                self.SYSTEM_PROMPT, prompt, response_schema=LongitudinalObservationSchema, max_tokens=1000
             )
             return raw_dict
         except Exception:
             return LongitudinalObservationSchema(
-                trends=[], medication_effectiveness=[], disease_progression=[],
-                new_risks=[], improvements=[], regressions=[]
+                trends=[],
+                medication_effectiveness=[],
+                disease_progression=[],
+                new_risks=[],
+                improvements=[],
+                regressions=[],
             ).model_dump()

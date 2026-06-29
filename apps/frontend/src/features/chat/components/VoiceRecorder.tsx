@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mic } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic } from "lucide-react";
 
 export function VoiceRecorder() {
   const [isRecording, setIsRecording] = useState(false);
@@ -19,7 +19,7 @@ export function VoiceRecorder() {
         {isRecording && (
           <motion.div
             initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: '160px' }}
+            animate={{ opacity: 1, width: "160px" }}
             exit={{ opacity: 0, width: 0 }}
             className="absolute right-12 bg-red-50 text-red-600 rounded-full px-4 py-2 text-sm font-medium flex items-center overflow-hidden shadow-sm border border-red-100"
           >
@@ -36,7 +36,9 @@ export function VoiceRecorder() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={`p-3 rounded-full transition-colors shadow-sm ${
-          isRecording ? 'bg-red-500 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+          isRecording
+            ? "bg-red-500 text-white"
+            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
         }`}
       >
         <Mic className="w-5 h-5" />

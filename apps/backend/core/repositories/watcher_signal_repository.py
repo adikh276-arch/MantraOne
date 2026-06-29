@@ -5,18 +5,21 @@ from sqlalchemy import select, update
 from infrastructure.database.models import WatcherSignal, HealthBaseline
 from core.repositories.base import BaseRepository
 
+
 class WatcherSignalRepository(BaseRepository[WatcherSignal]):
     model = WatcherSignal
 
     async def list_unsurfaced(self, family_id: UUID, member_id: UUID, lookback_hours: int = 48) -> list[WatcherSignal]:
         cutoff = datetime.now(timezone.utc) - timedelta(hours=lookback_hours)
         result = await self._db.execute(
-            select(WatcherSignal).where(
+            select(WatcherSignal)
+            .where(
                 WatcherSignal.family_id == family_id,
                 WatcherSignal.member_id == member_id,
                 WatcherSignal.surfaced.is_(False),
                 WatcherSignal.created_at >= cutoff,
-            ).order_by(WatcherSignal.created_at.desc())
+            )
+            .order_by(WatcherSignal.created_at.desc())
         )
         return list(result.scalars().all())
 
@@ -30,25 +33,30 @@ class WatcherSignalRepository(BaseRepository[WatcherSignal]):
     async def list_by_domain(self, member_id: UUID, family_id: UUID, domain: str, days: int = 7) -> list[WatcherSignal]:
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         result = await self._db.execute(
-            select(WatcherSignal).where(
+            select(WatcherSignal)
+            .where(
                 WatcherSignal.member_id == member_id,
                 WatcherSignal.family_id == family_id,
                 WatcherSignal.watcher_domain == domain,
                 WatcherSignal.created_at >= cutoff,
-            ).order_by(WatcherSignal.created_at.desc())
+            )
+            .order_by(WatcherSignal.created_at.desc())
         )
         return list(result.scalars().all())
 
     async def list_recent_all_domains(self, member_id: UUID, family_id: UUID, days: int = 7) -> list[WatcherSignal]:
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
         result = await self._db.execute(
-            select(WatcherSignal).where(
+            select(WatcherSignal)
+            .where(
                 WatcherSignal.member_id == member_id,
                 WatcherSignal.family_id == family_id,
                 WatcherSignal.created_at >= cutoff,
-            ).order_by(WatcherSignal.created_at.desc())
+            )
+            .order_by(WatcherSignal.created_at.desc())
         )
         return list(result.scalars().all())
+
 
 class HealthBaselineRepository(BaseRepository[HealthBaseline]):
     model = HealthBaseline
@@ -63,7 +71,15 @@ class HealthBaselineRepository(BaseRepository[HealthBaseline]):
         )
         return result.scalar_one_or_none()
 
-    async def upsert(self, family_id: UUID, member_id: UUID, domain: str, baseline_data_encrypted: str, data_points_count: int, confidence_score: float) -> HealthBaseline:
+    async def upsert(
+        self,
+        family_id: UUID,
+        member_id: UUID,
+        domain: str,
+        baseline_data_encrypted: str,
+        data_points_count: int,
+        confidence_score: float,
+    ) -> HealthBaseline:
         existing = await self.get_for_domain(member_id, family_id, domain)
         if existing:
             existing.baseline_data = baseline_data_encrypted
@@ -72,8 +88,11 @@ class HealthBaselineRepository(BaseRepository[HealthBaseline]):
             existing.calculated_at = datetime.now(timezone.utc)
             return await self.save(existing)
         baseline = HealthBaseline(
-            family_id=family_id, member_id=member_id, domain=domain,
-            baseline_data=baseline_data_encrypted, data_points_count=data_points_count,
+            family_id=family_id,
+            member_id=member_id,
+            domain=domain,
+            baseline_data=baseline_data_encrypted,
+            data_points_count=data_points_count,
             confidence_score=confidence_score,
         )
         return await self.save(baseline)

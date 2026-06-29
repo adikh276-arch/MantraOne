@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID
 from core.domain.enums import WatcherDomain, UrgencyLevel, TrendDirection, SignalSeverity
 
+
 @dataclass(frozen=True)
 class HealthBaseline:
     member_id: UUID
@@ -18,6 +19,7 @@ class HealthBaseline:
 
     def get_metric(self, key: str, default: float = 0.0) -> float:
         return float(self.baseline_data.get(key, default))
+
 
 @dataclass(frozen=True)
 class ConvergenceResult:
@@ -38,6 +40,7 @@ class ConvergenceResult:
             "time_window_days": self.time_window_days,
             "triggering_signals": list(self.triggering_signals),
         }
+
 
 @dataclass(frozen=True)
 class DomainSignalSummary:

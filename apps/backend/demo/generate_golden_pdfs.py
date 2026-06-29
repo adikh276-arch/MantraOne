@@ -5,31 +5,33 @@ from reportlab.lib.units import inch
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "../../../golden/reports")
 
+
 def create_pdf(filename, title, patient, content_lines):
     path = os.path.join(REPORTS_DIR, filename)
     os.makedirs(REPORTS_DIR, exist_ok=True)
     c = canvas.Canvas(path, pagesize=letter)
-    
+
     # Header
     c.setFont("Helvetica-Bold", 16)
     c.drawString(1 * inch, 10 * inch, "MantraOne Health Labs")
-    
+
     c.setFont("Helvetica", 12)
     c.drawString(1 * inch, 9.5 * inch, f"Report: {title}")
     c.drawString(1 * inch, 9.25 * inch, f"Patient: {patient}")
     c.drawString(1 * inch, 9.0 * inch, "Date: 2023-10-15")
-    
+
     # Line
     c.line(1 * inch, 8.8 * inch, 7.5 * inch, 8.8 * inch)
-    
+
     # Content
     c.setFont("Helvetica", 11)
     y = 8.3 * inch
     for line in content_lines:
         c.drawString(1 * inch, y, line)
         y -= 0.3 * inch
-        
+
     c.save()
+
 
 if __name__ == "__main__":
     create_pdf(
@@ -44,8 +46,8 @@ if __name__ == "__main__":
             "",
             "Notes: Patient presents with uncontrolled Type 2 Diabetes.",
             "Recommended starting Metformin 500mg BD.",
-            "Needs strict diet control and daily exercise."
-        ]
+            "Needs strict diet control and daily exercise.",
+        ],
     )
 
     create_pdf(
@@ -60,8 +62,8 @@ if __name__ == "__main__":
             "",
             "Notes: Clinical hypothyroidism confirmed.",
             "Recommended Thyroxine 50mcg daily before breakfast.",
-            "Re-evaluate after 6 weeks."
-        ]
+            "Re-evaluate after 6 weeks.",
+        ],
     )
 
     create_pdf(
@@ -74,8 +76,8 @@ if __name__ == "__main__":
             "- WBC: 6,500 /cumm (Normal)",
             "- Platelets: 250,000 /cumm (Normal)",
             "",
-            "Notes: All values within normal physiological limits."
-        ]
+            "Notes: All values within normal physiological limits.",
+        ],
     )
 
     create_pdf(
@@ -89,7 +91,7 @@ if __name__ == "__main__":
             "- 2023-01-10: Hepatitis A (Dose 1) - Administered",
             "",
             "Upcoming:",
-            "- Flu Shot due next month."
-        ]
+            "- Flu Shot due next month.",
+        ],
     )
     print("Golden PDFs generated successfully.")

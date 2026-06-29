@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Activity, ShieldCheck, Heart } from 'lucide-react';
+import React from "react";
+import { motion } from "framer-motion";
+import { Activity, ShieldCheck, Heart } from "lucide-react";
 
 export function FamilyStatusBoard() {
   return (
@@ -18,7 +18,9 @@ export function FamilyStatusBoard() {
         </div>
         <div>
           <h3 className="font-semibold text-stone-900">Stable</h3>
-          <p className="text-sm text-stone-500 mt-1">No active escalations. The Smith family is healthy today.</p>
+          <p className="text-sm text-stone-500 mt-1">
+            No active escalations. The Smith family is healthy today.
+          </p>
         </div>
       </motion.div>
 
@@ -33,7 +35,9 @@ export function FamilyStatusBoard() {
         </div>
         <div>
           <h3 className="font-semibold text-stone-900">Recent Change</h3>
-          <p className="text-sm text-stone-500 mt-1">John's hypertension medication was logged 2 days ago.</p>
+          <p className="text-sm text-stone-500 mt-1">
+            John's hypertension medication was logged 2 days ago.
+          </p>
         </div>
       </motion.div>
 
@@ -48,7 +52,9 @@ export function FamilyStatusBoard() {
         </div>
         <div>
           <h3 className="font-semibold text-stone-900">Digital Twin</h3>
-          <p className="text-sm text-stone-500 mt-1">Confidence score is high (92%). Memory is up to date.</p>
+          <p className="text-sm text-stone-500 mt-1">
+            Confidence score is high (92%). Memory is up to date.
+          </p>
         </div>
       </motion.div>
     </div>

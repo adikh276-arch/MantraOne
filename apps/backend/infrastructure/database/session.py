@@ -6,11 +6,14 @@ import structlog
 
 logger = structlog.get_logger()
 
+
 class Base(DeclarativeBase):
     pass
 
+
 _engine: AsyncEngine | None = None
 _session_factory: async_sessionmaker[AsyncSession] | None = None
+
 
 def get_engine() -> AsyncEngine:
     global _engine
@@ -25,6 +28,7 @@ def get_engine() -> AsyncEngine:
         )
     return _engine
 
+
 def get_session_factory() -> async_sessionmaker[AsyncSession]:
     global _session_factory
     if _session_factory is None:
@@ -36,6 +40,7 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
         )
     return _session_factory
 
+
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     factory = get_session_factory()
     async with factory() as session:
@@ -45,6 +50,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
+
 
 async def close_engine() -> None:
     global _engine

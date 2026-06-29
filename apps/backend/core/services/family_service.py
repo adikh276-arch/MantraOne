@@ -7,6 +7,7 @@ from core.repositories.member_repository import MemberRepository
 from core.providers.encryption_service import EncryptionService
 from core.domain.enums import MemberRelationship
 
+
 class FamilyService:
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
@@ -32,7 +33,9 @@ class FamilyService:
             family = await self.create_family(default_name, firebase_uid, "Primary Member")
         return family
 
-    async def add_member(self, family_id: UUID, name: str, relationship: str, date_of_birth: str | None = None, gender: str | None = None) -> FamilyMember:
+    async def add_member(
+        self, family_id: UUID, name: str, relationship: str, date_of_birth: str | None = None, gender: str | None = None
+    ) -> FamilyMember:
         member = FamilyMember(
             family_id=family_id,
             name=self._enc.encrypt(name),

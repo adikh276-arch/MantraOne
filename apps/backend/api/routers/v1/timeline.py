@@ -6,6 +6,7 @@ from core.services.timeline_service import TimelineService
 
 router = APIRouter()
 
+
 @router.get("/")
 async def get_family_timeline(family_id: UUID, db: AsyncSession = Depends(get_db)):
     service = TimelineService(db)

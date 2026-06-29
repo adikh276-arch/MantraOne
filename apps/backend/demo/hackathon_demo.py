@@ -19,11 +19,14 @@ logger = structlog.get_logger()
 engine = create_async_engine(settings.database_url, echo=False)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+
 class MockStorageProvider:
     async def upload(self, **kwargs) -> str:
         return f"/mock/gcs/path/{kwargs.get('filename', 'doc.pdf')}"
+
     def compute_checksum(self, content: bytes) -> str:
         return "mock_sha256"
+
 
 async def setup_db():
     async with engine.begin() as conn:
@@ -31,33 +34,31 @@ async def setup_db():
         await conn.run_sync(Base.metadata.create_all)
     print("    -> Database schema recreated.")
 
+
 async def run_demo():
-    print("="*60)
+    print("=" * 60)
     print("🚀 MANTRAONE HACKATHON DEMO 🚀")
-    print("="*60)
-    
+    print("=" * 60)
+
     # 1. Setup & Reset
     print("\n[1] Initializing Database & Services...")
     await setup_db()
-    
+
     redis_pool = get_redis_pool()
     redis_client = Redis(connection_pool=redis_pool)
     event_publisher = EventPublisher(redis_client)
-    
+
     # Load sample family data
     with open("demo/sample_family.json", "r") as f:
         family_data = json.load(f)["family"]
-    
+
     async with AsyncSessionLocal() as db:
         # Create Family
         family = Family(
-            id=uuid.uuid4(),
-            name=family_data["name"],
-            primary_user_id="mock_firebase_uid",
-            subscription_tier="premium"
+            id=uuid.uuid4(), name=family_data["name"], primary_user_id="mock_firebase_uid", subscription_tier="premium"
         )
         db.add(family)
-        
+
         # Create Primary Member (Dad)
         dad = FamilyMember(
             id=uuid.uuid4(),
@@ -66,7 +67,7 @@ async def run_demo():
             relationship=family_data["primary_user"]["relationship"],
             date_of_birth=family_data["primary_user"]["date_of_birth"],
             timezone=family_data["primary_user"]["timezone"],
-            is_primary=True
+            is_primary=True,
         )
         db.add(dad)
         await db.commit()
@@ -78,7 +79,7 @@ async def run_demo():
     with open("demo/sample_prescription.pdf", "rb") as f:
         pdf_bytes = f.read()
     print(f"    -> Uploading 'sample_prescription.pdf' ({len(pdf_bytes)} bytes)")
-    
+
     async with AsyncSessionLocal() as db:
         doc_service = DocumentService(db, storage_provider=MockStorageProvider())
         doc = await doc_service.initiate_upload(
@@ -87,7 +88,7 @@ async def run_demo():
             document_type="prescription",
             member_id=dad.id,
             family_id=family.id,
-            mime_type="application/pdf"
+            mime_type="application/pdf",
         )
         print("    -> Processing document and extracting text...")
         processed_doc = await doc_service.process_document(doc, pdf_bytes)
@@ -108,22 +109,22 @@ async def run_demo():
                 metric_type="sleep_duration",
                 recorded_at=datetime.now(timezone.utc) - timedelta(days=i),
                 value_numeric=4.0,  # 4 hours of sleep
-                unit="hours"
+                unit="hours",
             )
         print("    -> Sleep metrics recorded and events published!")
-        
+
         from core.workers.watchers.sleep_watcher import SleepWatcher
         from core.events.types import HealthMetricRecordedEvent
-        
+
         sleep_event = HealthMetricRecordedEvent(
             metric_id=uuid.uuid4(),
             family_id=family.id,
             member_id=dad.id,
             metric_type="sleep_duration",
             value=4.0,
-            recorded_at=datetime.now(timezone.utc)
+            recorded_at=datetime.now(timezone.utc),
         )
-        
+
         watcher = SleepWatcher()
         print("    -> Evaluating Watcher constraints...")
         # Note: in Python 3.12, if _process returns a signal we capture it:
@@ -138,12 +139,12 @@ async def run_demo():
     async with AsyncSessionLocal() as db:
         from core.repositories.watcher_signal_repository import WatcherSignalRepository
         from core.services.coordinator_service import CoordinatorService
-        
+
         signal.family_id = family.id
         signal.member_id = dad.id
         signal_repo = WatcherSignalRepository(db)
         await signal_repo.save(signal)
-        
+
         coord_service = CoordinatorService(db)
         decision = await coord_service.select_daily_signal(dad.id, family.id)
         if decision:
@@ -157,7 +158,7 @@ async def run_demo():
     async with AsyncSessionLocal() as db:
         from core.domain.enums import WatcherDomain, SignalType, SignalSeverity, TrendDirection
         from core.domain.entities import WatcherSignalEntity
-        
+
         stress_signal = WatcherSignalEntity(
             id=uuid.uuid4(),
             family_id=family.id,
@@ -172,11 +173,12 @@ async def run_demo():
             supporting_data={},
             surfaced=False,
             expires_at=None,
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(timezone.utc),
         )
         await signal_repo.save(stress_signal)
-        
+
         from core.services.escalation_service import EscalationService
+
         esc_service = EscalationService(db)
         print("    -> Evaluating Escalation thresholds...")
         event = await esc_service.evaluate_escalation(dad.id, family.id)
@@ -185,13 +187,14 @@ async def run_demo():
             print(f"    -> Doctor Consultation Brief:\n{event.escalation_reason}")
         else:
             print("    -> [WARNING] Escalation not triggered.")
-    
+
     print("\n[6] Scenario 5: Typed Memory Retrieval")
     print("    -> Validating AI Memory: 'What medicines has Dad stopped?'...")
     async with AsyncSessionLocal() as db:
         from core.providers.memory_provider import MemoryProvider
+
         memory = MemoryProvider()
-        
+
         # We can simulate the typed recall!
         fragments = await memory.recall("medicines stopped", dad.id, family.id)
         if fragments:
@@ -201,9 +204,10 @@ async def run_demo():
         else:
             print("    -> [WARNING] No fragments recalled.")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("✅ DEMO COMPLETE")
-    print("="*60)
+    print("=" * 60)
+
 
 if __name__ == "__main__":
     asyncio.run(run_demo())

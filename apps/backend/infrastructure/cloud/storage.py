@@ -6,6 +6,7 @@ from core.contracts.storage import IStorageProvider
 
 logger = structlog.get_logger()
 
+
 class StorageProvider(IStorageProvider):
     def __init__(self):
         self._base_path = Path(settings.local_storage_path)
@@ -14,7 +15,9 @@ class StorageProvider(IStorageProvider):
     def _build_path(self, gcs_path: str) -> Path:
         return self._base_path / gcs_path
 
-    async def upload(self, content: bytes, family_id: UUID, member_id: UUID, document_type: str, file_uuid: UUID, extension: str) -> str:
+    async def upload(
+        self, content: bytes, family_id: UUID, member_id: UUID, document_type: str, file_uuid: UUID, extension: str
+    ) -> str:
         return "path"
 
     async def download(self, gcs_path: str) -> bytes:

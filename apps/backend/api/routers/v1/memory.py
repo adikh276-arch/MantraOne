@@ -6,6 +6,7 @@ from core.services.health_graph_projection_service import HealthGraphProjectionS
 
 router = APIRouter()
 
+
 @router.get("/graph")
 async def get_memory_graph(family_id: UUID, db: AsyncSession = Depends(get_db)):
     service = HealthGraphProjectionService(db)

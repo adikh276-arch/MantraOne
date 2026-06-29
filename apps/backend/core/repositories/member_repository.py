@@ -4,6 +4,7 @@ from sqlalchemy import select
 from infrastructure.database.models import FamilyMember
 from core.repositories.base import BaseRepository
 
+
 class MemberRepository(BaseRepository[FamilyMember]):
     model = FamilyMember
 
@@ -16,10 +17,12 @@ class MemberRepository(BaseRepository[FamilyMember]):
 
     async def list_by_family(self, family_id: UUID) -> list[FamilyMember]:
         result = await self._db.execute(
-            select(FamilyMember).where(
+            select(FamilyMember)
+            .where(
                 FamilyMember.family_id == family_id,
                 FamilyMember.deleted_at.is_(None),
-            ).order_by(FamilyMember.is_primary.desc(), FamilyMember.created_at)
+            )
+            .order_by(FamilyMember.is_primary.desc(), FamilyMember.created_at)
         )
         return list(result.scalars().all())
 

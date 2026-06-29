@@ -11,6 +11,7 @@ import structlog
 
 logger = structlog.get_logger()
 
+
 class FollowUpService:
     """
     Manages the lifecycle of clinical follow-ups.
@@ -26,34 +27,34 @@ class FollowUpService:
         """
         Scans a list of newly extracted medical entities (e.g. from DocumentIntelligenceService)
         and deterministically schedules follow-ups.
-        
+
         entities format: [{"name": "Diabetes", "type": "diagnosis"}, ...]
         """
         new_followups = []
         now = datetime.now(timezone.utc)
-        
+
         for entity in entities:
             entity_name = entity.get("name")
             entity_type = entity.get("type")
             if not entity_name or not entity_type:
                 continue
-                
+
             due_date = self._rules_engine.calculate_due_date(entity_name, entity_type, base_date=now)
             if due_date:
                 # Optional LLM Personalization for the description
                 # In a robust setup we'd prompt the LLM to rewrite the reminder.
                 # For efficiency we'll just use a standard template.
                 description = f"Follow-up required for {entity_type}: {entity_name}"
-                
+
                 fu = FollowUp(
                     family_id=family_id,
                     member_id=member_id,
                     description=description,
                     due_date=due_date,
-                    status="scheduled"
+                    status="scheduled",
                 )
                 new_followups.append(fu)
-                
+
         if new_followups:
             self._db.add_all(new_followups)
             await self._db.commit()

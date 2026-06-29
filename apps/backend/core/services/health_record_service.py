@@ -3,11 +3,16 @@ from uuid import UUID
 from datetime import datetime, date
 from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import HealthMetric, Medication, MedicationLog
-from core.repositories.health_record_repository import HealthMetricRepository, MedicationRepository, MedicationLogRepository
+from core.repositories.health_record_repository import (
+    HealthMetricRepository,
+    MedicationRepository,
+    MedicationLogRepository,
+)
 from core.providers.encryption_service import EncryptionService
 
 from core.contracts.event import IEventPublisher
 from core.events.types import HealthMetricRecordedEvent
+
 
 class HealthRecordService:
     def __init__(self, db: AsyncSession, event_publisher: IEventPublisher | None = None) -> None:
@@ -18,7 +23,18 @@ class HealthRecordService:
         self._enc = EncryptionService()
         self._publisher = event_publisher
 
-    async def record_metric(self, member_id: UUID, family_id: UUID, metric_type: str, recorded_at: datetime, value_numeric: float | None = None, value_systolic: float | None = None, value_diastolic: float | None = None, unit: str | None = None, notes: str | None = None) -> HealthMetric:
+    async def record_metric(
+        self,
+        member_id: UUID,
+        family_id: UUID,
+        metric_type: str,
+        recorded_at: datetime,
+        value_numeric: float | None = None,
+        value_systolic: float | None = None,
+        value_diastolic: float | None = None,
+        unit: str | None = None,
+        notes: str | None = None,
+    ) -> HealthMetric:
         metric = HealthMetric(
             family_id=family_id,
             member_id=member_id,
@@ -31,7 +47,7 @@ class HealthRecordService:
             notes=self._enc.encrypt_optional(notes),
         )
         saved = await self._metric_repo.save(metric)
-        
+
         if self._publisher:
             event = HealthMetricRecordedEvent(
                 metric_id=metric.id,
@@ -39,13 +55,21 @@ class HealthRecordService:
                 member_id=member_id,
                 metric_type=metric_type,
                 value=value_numeric or 0.0,
-                recorded_at=recorded_at
+                recorded_at=recorded_at,
             )
             await self._publisher.publish(event)
-            
+
         return saved
 
-    async def add_medication(self, member_id: UUID, family_id: UUID, name: str, start_date: date, dosage: str | None = None, frequency: str | None = None) -> Medication:
+    async def add_medication(
+        self,
+        member_id: UUID,
+        family_id: UUID,
+        name: str,
+        start_date: date,
+        dosage: str | None = None,
+        frequency: str | None = None,
+    ) -> Medication:
         med = Medication(
             family_id=family_id,
             member_id=member_id,
@@ -56,7 +80,16 @@ class HealthRecordService:
         )
         return await self._med_repo.save(med)
 
-    async def log_medication(self, medication_id: UUID, member_id: UUID, family_id: UUID, status: str, scheduled_time: datetime, taken_at: datetime | None = None, notes: str | None = None) -> MedicationLog:
+    async def log_medication(
+        self,
+        medication_id: UUID,
+        member_id: UUID,
+        family_id: UUID,
+        status: str,
+        scheduled_time: datetime,
+        taken_at: datetime | None = None,
+        notes: str | None = None,
+    ) -> MedicationLog:
         log = MedicationLog(
             family_id=family_id,
             member_id=member_id,

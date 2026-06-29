@@ -4,6 +4,7 @@ from core.events.types import BaseHealthEvent, HealthEventType
 
 logger = structlog.get_logger()
 
+
 class EventRouter:
     def __init__(self):
         self.routes = {}

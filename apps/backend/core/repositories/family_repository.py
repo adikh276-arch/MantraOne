@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.models import Family
 from core.repositories.base import BaseRepository
 
+
 class FamilyRepository(BaseRepository[Family]):
     model = Family
 
@@ -28,7 +29,7 @@ class FamilyRepository(BaseRepository[Family]):
             )
         )
         return result.scalar_one_or_none()
-    
+
     async def create(self, name: str, primary_user_id: str) -> Family:
         family = Family(name=name, primary_user_id=primary_user_id)
         return await self.save(family)

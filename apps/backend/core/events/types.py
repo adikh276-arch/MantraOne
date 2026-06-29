@@ -4,15 +4,17 @@ from uuid import UUID, uuid4
 from datetime import datetime, date, timezone
 from core.domain.enums import HealthEventType, WatcherDomain, SignalSeverity
 
+
 class BaseHealthEvent(BaseModel):
     event_id: UUID = Field(default_factory=uuid4)
     event_type: HealthEventType
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     idempotency_key: str = Field(default="")
-    
+
     def model_post_init(self, __context) -> None:
         if not self.idempotency_key:
             self.idempotency_key = str(self.event_id)
+
 
 class CheckinSubmittedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.CHECKIN_SUBMITTED
@@ -21,6 +23,7 @@ class CheckinSubmittedEvent(BaseHealthEvent):
     family_id: UUID
     domain: str
     checkin_date: date
+
 
 class HealthMetricRecordedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.HEALTH_METRIC_RECORDED
@@ -31,6 +34,7 @@ class HealthMetricRecordedEvent(BaseHealthEvent):
     recorded_at: datetime
     value: float = 0.0
 
+
 class MedicationLoggedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.MEDICATION_LOGGED
     log_id: UUID
@@ -39,6 +43,7 @@ class MedicationLoggedEvent(BaseHealthEvent):
     family_id: UUID
     status: str
 
+
 class DocumentProcessedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.DOCUMENT_PROCESSED
     document_id: UUID
@@ -46,6 +51,7 @@ class DocumentProcessedEvent(BaseHealthEvent):
     family_id: UUID
     document_type: str
     extracted_entities: list[str] = Field(default_factory=list)
+
 
 class WatcherSignalEmittedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.WATCHER_SIGNAL_EMITTED
@@ -56,6 +62,7 @@ class WatcherSignalEmittedEvent(BaseHealthEvent):
     severity: SignalSeverity
     signal_type: str
 
+
 class CoordinatorDecidedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.COORDINATOR_DECIDED
     decision_id: UUID
@@ -63,6 +70,7 @@ class CoordinatorDecidedEvent(BaseHealthEvent):
     family_id: UUID
     selected_domain: WatcherDomain
     checkin_question: str | None = None
+
 
 class EscalationTriggeredEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.ESCALATION_TRIGGERED
@@ -72,6 +80,7 @@ class EscalationTriggeredEvent(BaseHealthEvent):
     urgency_level: str
     recommended_specialty: str
 
+
 class MemoryIngestedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.MEMORY_INGESTED
     source_entity_type: str
@@ -79,6 +88,7 @@ class MemoryIngestedEvent(BaseHealthEvent):
     member_id: UUID
     family_id: UUID
     cognee_memory_id: str
+
 
 class DocumentUploadedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.DOCUMENT_UPLOADED
@@ -88,6 +98,7 @@ class DocumentUploadedEvent(BaseHealthEvent):
     document_type: str
     gcs_path: str
 
+
 class DocumentExtractedEvent(BaseHealthEvent):
     event_type: HealthEventType = HealthEventType.DOCUMENT_EXTRACTED
     document_id: UUID
@@ -95,6 +106,7 @@ class DocumentExtractedEvent(BaseHealthEvent):
     family_id: UUID
     extracted_text_length: int
     mime_type: str
+
 
 EVENT_TYPE_MAP: dict[HealthEventType, type[BaseHealthEvent]] = {
     HealthEventType.CHECKIN_SUBMITTED: CheckinSubmittedEvent,

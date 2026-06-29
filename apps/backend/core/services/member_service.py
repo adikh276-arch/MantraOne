@@ -5,6 +5,7 @@ from infrastructure.database.models import FamilyMember
 from core.repositories.member_repository import MemberRepository
 from core.providers.encryption_service import EncryptionService
 
+
 class MemberService:
     def __init__(self, db: AsyncSession) -> None:
         self._db = db

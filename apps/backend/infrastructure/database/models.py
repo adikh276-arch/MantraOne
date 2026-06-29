@@ -3,8 +3,18 @@ import uuid
 from datetime import datetime, date
 from typing import Optional
 from sqlalchemy import (
-    String, Boolean, Integer, Float, Text, Date,
-    ForeignKey, UniqueConstraint, Index, BigInteger, func, JSON
+    String,
+    Boolean,
+    Integer,
+    Float,
+    Text,
+    Date,
+    ForeignKey,
+    UniqueConstraint,
+    Index,
+    BigInteger,
+    func,
+    JSON,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 from sqlalchemy.orm import mapped_column, Mapped, relationship as orm_relationship
@@ -12,6 +22,7 @@ from infrastructure.database.session import Base
 from sqlalchemy import DateTime
 
 TIMESTAMPTZ = DateTime(timezone=True)
+
 
 class Family(Base):
     __tablename__ = "families"
@@ -23,11 +34,14 @@ class Family(Base):
     onboarding_completed_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     health_baseline_version: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     members: Mapped[list[FamilyMember]] = orm_relationship(back_populates="family", lazy="noload")
     __table_args__ = (Index("idx_families_primary_user", "primary_user_id"),)
+
 
 class FamilyMember(Base):
     __tablename__ = "family_members"
@@ -45,11 +59,17 @@ class FamilyMember(Base):
     role: Mapped[str] = mapped_column(String(50), default="standard", nullable=False)
     health_profile_complete: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     family: Mapped[Family] = orm_relationship(back_populates="members", lazy="noload")  # type: ignore
-    __table_args__ = (Index("idx_members_family", "family_id"), Index("idx_members_firebase_uid", "firebase_uid"),)
+    __table_args__ = (
+        Index("idx_members_family", "family_id"),
+        Index("idx_members_firebase_uid", "firebase_uid"),
+    )
+
 
 class HealthBaseline(Base):
     __tablename__ = "health_baselines"
@@ -62,7 +82,11 @@ class HealthBaseline(Base):
     data_points_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     confidence_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (UniqueConstraint("member_id", "domain", name="uq_baseline_member_domain"), Index("idx_baselines_member_domain", "member_id", "domain"),)
+    __table_args__ = (
+        UniqueConstraint("member_id", "domain", name="uq_baseline_member_domain"),
+        Index("idx_baselines_member_domain", "member_id", "domain"),
+    )
+
 
 class DailyCheckin(Base):
     __tablename__ = "daily_checkins"
@@ -79,7 +103,12 @@ class DailyCheckin(Base):
     memory_ingested: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     memory_ingested_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (UniqueConstraint("member_id", "checkin_date", "domain", name="uq_checkin_member_date_domain"), Index("idx_checkins_member_date", "member_id", "checkin_date"), Index("idx_checkins_family_date", "family_id", "checkin_date"),)
+    __table_args__ = (
+        UniqueConstraint("member_id", "checkin_date", "domain", name="uq_checkin_member_date_domain"),
+        Index("idx_checkins_member_date", "member_id", "checkin_date"),
+        Index("idx_checkins_family_date", "family_id", "checkin_date"),
+    )
+
 
 class WatcherSignal(Base):
     __tablename__ = "watcher_signals"
@@ -98,7 +127,11 @@ class WatcherSignal(Base):
     surfaced_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     expires_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (Index("idx_signals_member_domain", "member_id", "watcher_domain", "signal_date"), Index("idx_signals_unsurfaced", "family_id", "surfaced", "severity", "created_at"),)
+    __table_args__ = (
+        Index("idx_signals_member_domain", "member_id", "watcher_domain", "signal_date"),
+        Index("idx_signals_unsurfaced", "family_id", "surfaced", "severity", "created_at"),
+    )
+
 
 class DomainConfidence(Base):
     __tablename__ = "domain_confidences"
@@ -110,25 +143,33 @@ class DomainConfidence(Base):
     freshness: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     evidence_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    last_updated: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    last_updated: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
     __table_args__ = (
         UniqueConstraint("member_id", "domain", name="uq_domain_confidence_member_domain"),
         Index("idx_domain_confidences_member", "member_id"),
     )
 
+
 class HealthInsight(Base):
     __tablename__ = "health_insights"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     family_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
-    insight_type: Mapped[str] = mapped_column(String(50), nullable=False) # trend, alert, gap, summary
+    insight_type: Mapped[str] = mapped_column(String(50), nullable=False)  # trend, alert, gap, summary
     description: Mapped[str] = mapped_column(Text, nullable=False)
     structured_data: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
-    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False) # generated, active, updated, resolved, archived
+    status: Mapped[str] = mapped_column(
+        String(50), default="active", nullable=False
+    )  # generated, active, updated, resolved, archived
     source_entity_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
 
 class FollowUp(Base):
     __tablename__ = "follow_ups"
@@ -137,35 +178,48 @@ class FollowUp(Base):
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     due_date: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
-    status: Mapped[str] = mapped_column(String(50), default="scheduled", nullable=False) # scheduled, pending, completed, dismissed, overdue, escalated
+    status: Mapped[str] = mapped_column(
+        String(50), default="scheduled", nullable=False
+    )  # scheduled, pending, completed, dismissed, overdue, escalated
     source_entity_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
 
 class PreventiveObservation(Base):
     __tablename__ = "preventive_observations"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     family_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
-    observation_type: Mapped[str] = mapped_column(String(50), nullable=False) # missing_lab, medication_adherence, preventive_screening
+    observation_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # missing_lab, medication_adherence, preventive_screening
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False) # active, resolved, dismissed
+    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False)  # active, resolved, dismissed
     structured_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
 
 class ExplainabilityTrace(Base):
     __tablename__ = "explainability_traces"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     family_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
-    target_entity_type: Mapped[str] = mapped_column(String(50), nullable=False) # HealthInsight, PreventiveObservation, ChatResponse
+    target_entity_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # HealthInsight, PreventiveObservation, ChatResponse
     target_entity_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     reasoning_source: Mapped[str] = mapped_column(Text, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
-    memories_used: Mapped[Optional[list]] = mapped_column(JSON, nullable=True) # list of memory fragment IDs
-    timeline_events_referenced: Mapped[Optional[list]] = mapped_column(JSON, nullable=True) # list of event descriptors
+    memories_used: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # list of memory fragment IDs
+    timeline_events_referenced: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)  # list of event descriptors
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
+
 
 class KnowledgeGap(Base):
     __tablename__ = "knowledge_gaps"
@@ -177,32 +231,43 @@ class KnowledgeGap(Base):
     confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     clinical_priority: Mapped[str] = mapped_column(String(50), nullable=False)
     suggested_action: Mapped[str] = mapped_column(String(50), nullable=False)
-    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False) # active, resolved
+    status: Mapped[str] = mapped_column(String(50), default="active", nullable=False)  # active, resolved
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
+
 
 class NextAction(Base):
     __tablename__ = "next_actions"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     family_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
-    action_type: Mapped[str] = mapped_column(String(50), nullable=False) # ASK_QUESTION, WAIT, REMIND, ESCALATE, REQUEST_REPORT, REQUEST_WEARABLE
+    action_type: Mapped[str] = mapped_column(
+        String(50), nullable=False
+    )  # ASK_QUESTION, WAIT, REMIND, ESCALATE, REQUEST_REPORT, REQUEST_WEARABLE
     priority: Mapped[float] = mapped_column(Float, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
-    execution_strategy: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True) # E.g., The question text if it's ASK_QUESTION
-    status: Mapped[str] = mapped_column(String(50), default="pending", nullable=False) # pending, executed, expired
+    execution_strategy: Mapped[Optional[dict]] = mapped_column(
+        JSON, nullable=True
+    )  # E.g., The question text if it's ASK_QUESTION
+    status: Mapped[str] = mapped_column(String(50), default="pending", nullable=False)  # pending, executed, expired
     expires_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     generated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
+
 
 class UserFatigueMetrics(Base):
     __tablename__ = "user_fatigue_metrics"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False, unique=True)
+    member_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False, unique=True
+    )
     questions_asked: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     questions_answered: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     questions_ignored: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     average_response_latency_mins: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     last_interaction_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
 
 class ClinicalOutcome(Base):
     __tablename__ = "clinical_outcomes"
@@ -215,17 +280,19 @@ class ClinicalOutcome(Base):
     doctor_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
 
+
 class InterventionObservation(Base):
     __tablename__ = "intervention_observations"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     family_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("families.id"), nullable=False)
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
-    intervention_type: Mapped[str] = mapped_column(String(100), nullable=False) # e.g., "Medication: Lisinopril"
-    target_metric: Mapped[str] = mapped_column(String(100), nullable=False) # e.g., "Blood Pressure"
+    intervention_type: Mapped[str] = mapped_column(String(100), nullable=False)  # e.g., "Medication: Lisinopril"
+    target_metric: Mapped[str] = mapped_column(String(100), nullable=False)  # e.g., "Blood Pressure"
     baseline: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     current_status: Mapped[str] = mapped_column(Text, nullable=False)
-    efficacy_status: Mapped[str] = mapped_column(String(50), nullable=False) # improving, no_change, deteriorating
+    efficacy_status: Mapped[str] = mapped_column(String(50), nullable=False)  # improving, no_change, deteriorating
     evaluated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
+
 
 class CoordinatorDecision(Base):
     __tablename__ = "coordinator_decisions"
@@ -242,9 +309,15 @@ class CoordinatorDecision(Base):
     checkin_generated: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     delivered_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     responded_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
-    response_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("daily_checkins.id"), nullable=True)
+    response_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("daily_checkins.id"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (UniqueConstraint("member_id", "decision_date", "selected_domain", name="uq_coordinator_member_date_domain"), Index("idx_coordinator_member_date", "member_id", "decision_date"),)
+    __table_args__ = (
+        UniqueConstraint("member_id", "decision_date", "selected_domain", name="uq_coordinator_member_date_domain"),
+        Index("idx_coordinator_member_date", "member_id", "decision_date"),
+    )
+
 
 class HealthMetric(Base):
     __tablename__ = "health_metrics"
@@ -266,6 +339,7 @@ class HealthMetric(Base):
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     __table_args__ = (Index("idx_metrics_member_type", "member_id", "metric_type", "recorded_at"),)
 
+
 class Medication(Base):
     __tablename__ = "medications"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -283,9 +357,12 @@ class Medication(Base):
     source_document_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     __table_args__ = (Index("idx_medications_member_active", "member_id", "is_active"),)
+
 
 class MedicationLog(Base):
     __tablename__ = "medication_logs"
@@ -299,6 +376,7 @@ class MedicationLog(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
     __table_args__ = (Index("idx_med_logs_member_date", "member_id", "scheduled_time"),)
+
 
 class Document(Base):
     __tablename__ = "documents"
@@ -317,14 +395,22 @@ class Document(Base):
     structured_data: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     document_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     document_date_confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    duplicate_of_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=True)
+    duplicate_of_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("documents.id"), nullable=True
+    )
     issued_by: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     memory_ingested: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     memory_ingested_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
-    __table_args__ = (Index("idx_documents_member_type", "member_id", "document_type", "created_at"), Index("idx_documents_processing", "processing_status", "created_at"),)
+    __table_args__ = (
+        Index("idx_documents_member_type", "member_id", "document_type", "created_at"),
+        Index("idx_documents_processing", "processing_status", "created_at"),
+    )
+
 
 class Diagnosis(Base):
     __tablename__ = "diagnoses"
@@ -342,9 +428,12 @@ class Diagnosis(Base):
     source_document_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     source_consultation_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     __table_args__ = (Index("idx_diagnoses_member", "member_id", "status"),)
+
 
 class EscalationEvent(Base):
     __tablename__ = "escalation_events"
@@ -362,7 +451,11 @@ class EscalationEvent(Base):
     dismissed_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     dismissed_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (Index("idx_escalations_member", "member_id", "triggered_at"), Index("idx_escalations_pending", "family_id", "status"),)
+    __table_args__ = (
+        Index("idx_escalations_member", "member_id", "triggered_at"),
+        Index("idx_escalations_pending", "family_id", "status"),
+    )
+
 
 class Consultation(Base):
     __tablename__ = "consultations"
@@ -382,9 +475,12 @@ class Consultation(Base):
     consultation_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     follow_up_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     __table_args__ = (Index("idx_consultations_member", "member_id", "scheduled_at"),)
+
 
 class MemoryOperation(Base):
     __tablename__ = "memory_operations"
@@ -399,7 +495,11 @@ class MemoryOperation(Base):
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (Index("idx_memory_ops_family", "family_id", "created_at"), Index("idx_memory_ops_entity", "source_entity_type", "source_entity_id"),)
+    __table_args__ = (
+        Index("idx_memory_ops_family", "family_id", "created_at"),
+        Index("idx_memory_ops_entity", "source_entity_type", "source_entity_id"),
+    )
+
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
@@ -411,6 +511,7 @@ class AuditLog(Base):
     result: Mapped[str] = mapped_column(String(50), nullable=False)
     timestamp: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
     __table_args__ = (Index("idx_audit_actor", "actor_id", "timestamp"),)
+
 
 class DataGrant(Base):
     __tablename__ = "data_grants"
@@ -424,7 +525,11 @@ class DataGrant(Base):
     permissions: Mapped[str] = mapped_column(String(100), nullable=False)
     expires_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMPTZ, nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    __table_args__ = (Index("idx_grants_grantee", "grantee_id"), Index("idx_grants_grantor", "grantor_id"),)
+    __table_args__ = (
+        Index("idx_grants_grantee", "grantee_id"),
+        Index("idx_grants_grantor", "grantor_id"),
+    )
+
 
 class Conversation(Base):
     __tablename__ = "conversations"
@@ -433,13 +538,18 @@ class Conversation(Base):
     member_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("family_members.id"), nullable=False)
     title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMPTZ, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     __table_args__ = (Index("idx_conversations_member", "member_id", "updated_at"),)
+
 
 class Message(Base):
     __tablename__ = "messages"
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    conversation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False)
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("conversations.id"), nullable=False
+    )
     role: Mapped[str] = mapped_column(String(50), nullable=False)  # 'user', 'assistant', 'system'
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMPTZ, nullable=False, server_default=func.now())

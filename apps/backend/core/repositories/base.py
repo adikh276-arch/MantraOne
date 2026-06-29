@@ -8,6 +8,7 @@ from infrastructure.database.session import Base
 
 ModelT = TypeVar("ModelT", bound=Base)
 
+
 class BaseRepository(Generic[ModelT]):
     model: Type[ModelT]
 
@@ -17,8 +18,8 @@ class BaseRepository(Generic[ModelT]):
     async def get_by_id(self, entity_id: UUID, family_id: UUID) -> ModelT | None:
         result = await self._db.execute(
             select(self.model).where(
-                getattr(self.model, 'id') == entity_id,  # type: ignore
-                getattr(self.model, 'family_id') == family_id,  # type: ignore
+                getattr(self.model, "id") == entity_id,  # type: ignore
+                getattr(self.model, "family_id") == family_id,  # type: ignore
                 getattr(self.model, "deleted_at").is_(None) if hasattr(self.model, "deleted_at") else True,  # type: ignore
             )
         )
@@ -31,5 +32,5 @@ class BaseRepository(Generic[ModelT]):
         return entity
 
     async def soft_delete(self, entity: ModelT) -> None:
-        setattr(entity, 'deleted_at', datetime.now(timezone.utc))  # type: ignore
+        setattr(entity, "deleted_at", datetime.now(timezone.utc))  # type: ignore
         await self._db.flush()

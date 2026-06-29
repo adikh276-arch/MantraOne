@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from infrastructure.database.models import DomainConfidence, HealthInsight
 
+
 class HealthStateEngine:
     """
     Deterministically computes a Family Member's HealthState based on rules, confidence scores,
@@ -23,12 +24,13 @@ class HealthStateEngine:
         # Fetch confidences
         res_conf = await self._db.execute(select(DomainConfidence).where(DomainConfidence.member_id == member_id))
         confidences = res_conf.scalars().all()
-        
+
         # Fetch active insights (for recent changes and attention needs)
-        res_insights = await self._db.execute(select(HealthInsight).where(
-            HealthInsight.member_id == member_id,
-            HealthInsight.status.in_(["active", "updated"])
-        ))
+        res_insights = await self._db.execute(
+            select(HealthInsight).where(
+                HealthInsight.member_id == member_id, HealthInsight.status.in_(["active", "updated"])
+            )
+        )
         active_insights = res_insights.scalars().all()
 
         # Deterministic Rules
@@ -48,13 +50,13 @@ class HealthStateEngine:
         missing_info = []
         overall_confidence_sum = 0.0
         domain_count = 0
-        
+
         for c in confidences:
             domain_count += 1
-            overall_confidence_sum += (c.confidence * c.freshness)
+            overall_confidence_sum += c.confidence * c.freshness
             if c.freshness < 0.3 or c.completeness < 0.5:
                 missing_info.append(f"Needs update for {c.domain}")
-                
+
         avg_confidence = (overall_confidence_sum / domain_count) if domain_count > 0 else 0.0
 
         # 3. Recent Changes
@@ -64,6 +66,6 @@ class HealthStateEngine:
             "overall_status": overall_status,
             "attention_level": attention_level,
             "confidence_score": round(avg_confidence, 2),
-            "recent_changes": recent_changes[:5], # Top 5
-            "missing_information": missing_info
+            "recent_changes": recent_changes[:5],  # Top 5
+            "missing_information": missing_info,
         }

@@ -3,6 +3,7 @@ from pydantic import computed_field
 from typing import Literal
 from functools import lru_cache
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env.local",
@@ -65,8 +66,10 @@ class Settings(BaseSettings):
     def sync_database_url(self) -> str:
         return self.database_url.replace("+asyncpg", "+psycopg2")
 
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
 
 settings = get_settings()

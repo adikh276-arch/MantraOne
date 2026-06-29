@@ -6,6 +6,7 @@ from core.events.types import BaseHealthEvent
 
 logger = structlog.get_logger()
 
+
 class BaseWatcher:
     domain: WatcherDomain
 

@@ -3,6 +3,7 @@ import structlog
 
 logger = structlog.get_logger()
 
+
 class NarrativeBuilderWorker:
     async def process_event(self, event) -> None:
         logger.info("narrative_builder_process", event_type=event.event_type.value)

@@ -4,6 +4,7 @@ import structlog
 
 logger = structlog.get_logger()
 
+
 async def get_secret(secret_name: str) -> str:
     if settings.is_development:
         env_key = f"MANTRAONE_{secret_name.upper()}"
@@ -13,6 +14,7 @@ async def get_secret(secret_name: str) -> str:
         return value
     try:
         from google.cloud import secretmanager
+
         client = secretmanager.SecretManagerServiceClient()
         project_id = os.environ["GOOGLE_CLOUD_PROJECT"]
         name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"

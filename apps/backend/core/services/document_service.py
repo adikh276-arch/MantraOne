@@ -13,26 +13,32 @@ class DocumentService:
         self._repo = DocumentRepository(db)
         self._enc = EncryptionService()
         self._storage = storage_provider
-        
+
         from core.providers.memory_provider import MemoryProvider
+
         self._memory = MemoryProvider()
-        
+
         from core.services.document_intelligence_service import DocumentIntelligenceService
+
         self._intelligence = DocumentIntelligenceService(db)
 
-    async def initiate_upload(self, content: bytes, filename: str, document_type: str, member_id: UUID, family_id: UUID, mime_type: str) -> Document:
+    async def initiate_upload(
+        self, content: bytes, filename: str, document_type: str, member_id: UUID, family_id: UUID, mime_type: str
+    ) -> Document:
         import hashlib
+
         checksum = hashlib.sha256(content).hexdigest()
-        
+
         # Check exact duplicate
         duplicate_id = await self._intelligence.check_exact_duplicate(checksum)
         if duplicate_id:
             raise ValueError(f"Exact duplicate found: {duplicate_id}")
-            
+
         import uuid
+
         file_uuid = uuid.uuid4()
-        extension = filename.split('.')[-1] if '.' in filename else ''
-        
+        extension = filename.split(".")[-1] if "." in filename else ""
+
         gcs_path = await self._storage.upload(
             content=content,
             family_id=family_id,
@@ -41,10 +47,11 @@ class DocumentService:
             file_uuid=file_uuid,
             extension=extension,
         )
-        
+
         import hashlib
+
         checksum = hashlib.sha256(content).hexdigest()
-        
+
         doc = Document(
             family_id=family_id,
             member_id=member_id,
@@ -54,7 +61,7 @@ class DocumentService:
             mime_type=mime_type,
             file_size_bytes=len(content),
             checksum_sha256=checksum,
-            processing_status="processing"
+            processing_status="processing",
         )
         return await self._repo.save(doc)
 
@@ -64,9 +71,9 @@ class DocumentService:
         from core.domain.entities import HealthMemoryMetadata, MemoryType
         from datetime import datetime
         import structlog
-        
+
         logger = structlog.get_logger()
-        
+
         extracted_text = ""
         if doc.mime_type == "application/pdf":
             try:
@@ -100,7 +107,7 @@ class DocumentService:
                 memory_type=MemoryType.DOCUMENT,
                 source_entity_type="document",
                 source_entity_id=doc.id,
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             try:
                 await self._memory.remember(content=extracted_text, metadata=metadata)
@@ -109,23 +116,23 @@ class DocumentService:
                 doc.processing_status = "ingested"
             except Exception as e:
                 logger.error("memory_ingestion_failed", error=str(e), document_id=doc.id)
-                doc.processing_status = "needs_review" # Need manual intervention or retry
-            
+                doc.processing_status = "needs_review"  # Need manual intervention or retry
+
         return await self._repo.save(doc)
 
     async def approve_document(self, document_id: UUID) -> Optional[Document]:
         import structlog
         from datetime import datetime
         from core.domain.entities import HealthMemoryMetadata, MemoryType
-        
+
         logger = structlog.get_logger()
-        
+
         doc = await self._repo.get_by_id(document_id)
         if not doc or doc.processing_status != "needs_review":
             return doc
-            
+
         doc.processing_status = "approved"
-        
+
         # Ingest to Memory
         if doc.extracted_text and not doc.memory_ingested:
             metadata = HealthMemoryMetadata(
@@ -134,22 +141,22 @@ class DocumentService:
                 memory_type=MemoryType.DOCUMENT,
                 source_entity_type="document",
                 source_entity_id=doc.id,
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             try:
                 await self._memory.remember(content=doc.extracted_text, metadata=metadata)
                 doc.memory_ingested = True
                 doc.memory_ingested_at = datetime.now()
                 doc.processing_status = "ingested"
-                
+
                 # Publish MEMORY_UPDATED event for Intelligence Pipeline
                 from infrastructure.cache.redis_client import get_redis_client
                 from core.events.publisher import EventPublisher
                 import json
-                
+
                 redis = await get_redis_client()
                 publisher = EventPublisher(redis)
-                
+
                 # We need the extracted entities for FollowUpService
                 entities = []
                 if doc.structured_data:
@@ -158,28 +165,28 @@ class DocumentService:
                         entities = data.get("entities", [])
                     except Exception:
                         pass
-                
+
                 payload = {
                     "family_id": str(doc.family_id),
                     "member_id": str(doc.member_id),
                     "new_data_text": doc.extracted_text,
                     "entities": entities,
-                    "memory_type": "document"
+                    "memory_type": "document",
                 }
-                # Since we don't have ARQ setup immediately wired, we will publish the event. 
+                # Since we don't have ARQ setup immediately wired, we will publish the event.
                 # The intelligence_worker task would listen to this event.
                 await publisher.publish("MEMORY_UPDATED", payload)
-                
+
             except Exception as e:
                 logger.error("memory_ingestion_failed_on_approval", error=str(e), document_id=doc.id)
                 # Keep it approved so it can be retried, or set to failed
-                
+
         return await self._repo.save(doc)
 
     async def reject_document(self, document_id: UUID) -> Optional[Document]:
         doc = await self._repo.get_by_id(document_id)
         if not doc or doc.processing_status != "needs_review":
             return doc
-            
+
         doc.processing_status = "rejected"
         return await self._repo.save(doc)

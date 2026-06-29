@@ -4,10 +4,12 @@ from uuid import UUID
 from datetime import datetime, timezone
 import uuid
 
+
 class AISession(BaseModel):
     """
     Context passed into every AI operation for tracking and observability.
     """
+
     request_id: UUID = Field(default_factory=uuid.uuid4)
     family_id: Optional[UUID] = None
     member_id: Optional[UUID] = None

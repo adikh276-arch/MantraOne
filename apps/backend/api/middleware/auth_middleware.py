@@ -7,12 +7,14 @@ import structlog
 
 logger = structlog.get_logger()
 
+
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         if request.url.path in ["/health", "/docs", "/openapi.json"] or request.url.path.startswith("/v1/internal/"):
             return await call_next(request)
 
         from config.settings import settings
+
         if settings.local_dev_mode:
             request.state.user = {"uid": "local-dev", "email": "dev@local.host"}
             return await call_next(request)
@@ -20,7 +22,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return Response(content="Unauthorized", status_code=401)
-        
+
         token = auth_header.split(" ")[1]
         try:
             user = await verify_firebase_token(token)
@@ -28,5 +30,5 @@ class AuthMiddleware(BaseHTTPMiddleware):
         except Exception as e:
             logger.warning("auth_failed", error=str(e))
             return Response(content="Invalid token", status_code=401)
-            
+
         return await call_next(request)

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 from uuid import UUID
 
+
 @dataclass
 class PermissionContext:
     actor_id: UUID
@@ -13,20 +14,22 @@ class PermissionContext:
     resource_type: str
     resource_id: Optional[str]
     scope: str
-    explicit_grants: List[dict] # list of active grants matching target
+    explicit_grants: List[dict]  # list of active grants matching target
     is_document_owner: bool = False
+
 
 @dataclass
 class PermissionResult:
     is_allowed: bool
     reason: str
 
+
 class PolicyEngine:
     """
     Evaluates fine-grained permissions for accessing family resources based on roles,
     relationships, explicit grants, resource scopes, and data ownership.
     """
-    
+
     SENSITIVE_SCOPES = {"mental_health", "reproductive_health"}
 
     def evaluate(self, ctx: PermissionContext) -> PermissionResult:
@@ -40,9 +43,10 @@ class PolicyEngine:
 
         # 3. Explicit Grants Evaluation (Highest Priority over defaults)
         valid_grants = [
-            g for g in ctx.explicit_grants 
-            if g['scope'] in {ctx.scope, 'all_health', '*'} and
-            (g['expires_at'] is None or g['expires_at'] > datetime.now(timezone.utc))
+            g
+            for g in ctx.explicit_grants
+            if g["scope"] in {ctx.scope, "all_health", "*"}
+            and (g["expires_at"] is None or g["expires_at"] > datetime.now(timezone.utc))
         ]
         if valid_grants:
             return PermissionResult(True, "Explicit grant access")
@@ -57,7 +61,7 @@ class PolicyEngine:
             return PermissionResult(False, "Sensitive domains require explicit grant")
 
         # 6. Minor access (Parents/Owners can typically see minor's non-sensitive data)
-        # If target is minor, and actor is owner/admin, allow. 
+        # If target is minor, and actor is owner/admin, allow.
         # (Assuming the primary relationship is parent/child for simplicity in this engine)
         if ctx.target_role == "minor" and ctx.actor_role in {"owner", "admin"}:
             return PermissionResult(True, "Parental/Guardian access to minor")

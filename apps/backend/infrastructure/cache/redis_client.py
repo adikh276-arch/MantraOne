@@ -5,6 +5,7 @@ import structlog
 logger = structlog.get_logger()
 _pool: ConnectionPool | None = None
 
+
 def get_redis_pool() -> ConnectionPool:
     global _pool
     if _pool is None:
@@ -15,8 +16,10 @@ def get_redis_pool() -> ConnectionPool:
         )
     return _pool
 
+
 async def get_redis_client() -> Redis:
     return Redis(connection_pool=get_redis_pool())
+
 
 async def close_redis_pool() -> None:
     global _pool
@@ -24,7 +27,9 @@ async def close_redis_pool() -> None:
         await _pool.disconnect()
         _pool = None
 
+
 STREAM_NAME = "mantraone:health_events"
+
 
 async def create_consumer_group(redis: Redis, stream: str, group: str) -> None:
     try:
@@ -33,7 +38,10 @@ async def create_consumer_group(redis: Redis, stream: str, group: str) -> None:
         if "BUSYGROUP" not in str(e):
             raise
 
-async def publish_event(redis: Redis, event_type: str, event_id: str, idempotency_key: str, data: str, timestamp: str) -> str:
+
+async def publish_event(
+    redis: Redis, event_type: str, event_id: str, idempotency_key: str, data: str, timestamp: str
+) -> str:
     entry_id = await redis.xadd(
         STREAM_NAME,
         {

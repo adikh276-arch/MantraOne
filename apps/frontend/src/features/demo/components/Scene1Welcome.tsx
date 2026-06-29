@@ -20,20 +20,21 @@ export function Scene1Welcome({ onNext }: { onNext: () => void }) {
           Meet the Sharma Family
         </h2>
       </motion.div>
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
       >
         <p className="text-neutral-400 text-xl md:text-2xl mb-12 font-light max-w-2xl leading-relaxed">
-          Healthcare interactions usually start from zero. Every appointment is a reset. 
+          Healthcare interactions usually start from zero. Every appointment is
+          a reset.
           <span className="text-white block mt-4 font-normal">
             MantraOne remembers everything.
           </span>
         </p>
       </motion.div>
-      
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

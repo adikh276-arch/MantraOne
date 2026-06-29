@@ -9,6 +9,7 @@ from core.events.subscriber import EventSubscriber
 
 logger = structlog.get_logger()
 
+
 async def startup(ctx: dict) -> None:
     logger.info("worker_startup")
     pool = get_redis_pool()
@@ -20,10 +21,12 @@ async def startup(ctx: dict) -> None:
     ctx["subscriber"] = sub
     logger.info("worker_ready")
 
+
 async def shutdown(ctx: dict) -> None:
     logger.info("worker_shutdown")
     if "redis" in ctx:
         await ctx["redis"].close()
+
 
 async def process_events_loop(ctx: dict) -> None:
     sub: EventSubscriber = ctx["subscriber"]
@@ -38,6 +41,7 @@ async def process_events_loop(ctx: dict) -> None:
         except Exception as exc:
             logger.error("event_loop_error", error=str(exc))
             await asyncio.sleep(1)
+
 
 class WorkerSettings:
     redis_settings = worker.RedisSettings(host=settings.redis_url.split("://")[1].split(":")[0], port=6379)

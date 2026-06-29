@@ -5,10 +5,17 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 from datetime import timezone
 from core.domain.enums import (
-    WatcherDomain, SignalSeverity, SignalType, TrendDirection,
-    MemoryType, UrgencyLevel, EscalationStatus, MemberRelationship,
+    WatcherDomain,
+    SignalSeverity,
+    SignalType,
+    TrendDirection,
+    MemoryType,
+    UrgencyLevel,
+    EscalationStatus,
+    MemberRelationship,
     SelectionReason,
 )
+
 
 @dataclass
 class FamilyMemberEntity:
@@ -23,6 +30,7 @@ class FamilyMemberEntity:
     gender: str | None = None
     preferred_language: str = "en"
     avatar_url: str | None = None
+
 
 @dataclass
 class WatcherSignalEntity:
@@ -41,6 +49,7 @@ class WatcherSignalEntity:
     expires_at: datetime | None
     created_at: datetime
 
+
 @dataclass
 class CoordinatorDecisionEntity:
     id: UUID
@@ -57,6 +66,7 @@ class CoordinatorDecisionEntity:
     delivered_at: datetime | None
     responded_at: datetime | None
 
+
 @dataclass
 class EscalationEventEntity:
     id: UUID
@@ -70,6 +80,7 @@ class EscalationEventEntity:
     urgency_level: UrgencyLevel
     status: EscalationStatus
     consultation_id: UUID | None = None
+
 
 class MemoryFragment(BaseModel):
     content: str
@@ -88,12 +99,14 @@ class MemoryFragment(BaseModel):
     last_verified_at: datetime | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
 class PreventiveObservationContext(BaseModel):
     id: UUID
     observation_type: str
     description: str
     status: str
     created_at: datetime
+
 
 class TimelineChapter(BaseModel):
     title: str
@@ -102,20 +115,22 @@ class TimelineChapter(BaseModel):
     end_date: datetime | None = None
     events: list[dict] = Field(default_factory=list)
 
+
 class FamilyDigitalTwin(BaseModel):
     family_id: UUID
-    members: list[dict] = Field(default_factory=list) # Basic demographics
-    health_states: dict[str, dict] = Field(default_factory=dict) # member_id -> state summary
+    members: list[dict] = Field(default_factory=list)  # Basic demographics
+    health_states: dict[str, dict] = Field(default_factory=dict)  # member_id -> state summary
     active_conditions: dict[str, list[str]] = Field(default_factory=dict)
     risks: dict[str, list[str]] = Field(default_factory=dict)
     medications: dict[str, list[str]] = Field(default_factory=dict)
-    confidence_scores: dict[str, dict] = Field(default_factory=dict) # domain -> scores
+    confidence_scores: dict[str, dict] = Field(default_factory=dict)  # domain -> scores
     preventive_needs: dict[str, list[PreventiveObservationContext]] = Field(default_factory=dict)
     missing_information: dict[str, list[str]] = Field(default_factory=dict)
     timeline_chapters: dict[str, list[TimelineChapter]] = Field(default_factory=dict)
     follow_ups: dict[str, list[dict]] = Field(default_factory=dict)
     insights: dict[str, list[dict]] = Field(default_factory=dict)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class ClinicalContext(BaseModel):
     patient_summary: dict = Field(default_factory=dict)
@@ -129,6 +144,7 @@ class ClinicalContext(BaseModel):
     family_context: dict = Field(default_factory=dict)
     retrieved_memories: list[MemoryFragment] = Field(default_factory=list)
 
+
 class HealthContext(BaseModel):
     member_id: UUID
     family_id: UUID
@@ -139,6 +155,7 @@ class HealthContext(BaseModel):
     recent_signals: list[dict] = Field(default_factory=list)
     memory_fragments: list[MemoryFragment] = Field(default_factory=list)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class HealthMemoryMetadata(BaseModel):
     family_id: UUID
@@ -156,11 +173,13 @@ class HealthMemoryMetadata(BaseModel):
     last_verified_at: datetime | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
 class ForgetResult(BaseModel):
     family_id: UUID
     member_id: UUID | None
     records_deleted: int
     memory_cleared: bool
+
 
 class TimelineEvent(BaseModel):
     date: datetime
@@ -168,15 +187,18 @@ class TimelineEvent(BaseModel):
     description: str
     domains: list[str] = Field(default_factory=list)
 
+
 class Timeline(BaseModel):
     member_id: UUID
     events: list[TimelineEvent]
+
 
 class MedicationHistory(BaseModel):
     member_id: UUID
     active_medications: list[str]
     stopped_medications: list[str]
     interactions_flagged: bool
+
 
 class RiskSummary(BaseModel):
     member_id: UUID

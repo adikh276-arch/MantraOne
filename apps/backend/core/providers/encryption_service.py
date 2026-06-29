@@ -8,6 +8,7 @@ from core.contracts.encryption import IEncryptionProvider
 
 _DEV_KEY = b"mantraone-dev-key-00000000000000"
 
+
 class EncryptionService(IEncryptionProvider):
     def __init__(self) -> None:
         if settings.encryption_key:

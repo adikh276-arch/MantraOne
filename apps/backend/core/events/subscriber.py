@@ -9,6 +9,7 @@ import structlog
 
 logger = structlog.get_logger()
 
+
 class EventSubscriber:
     group_name: str = ""
     consumer_name: str = ""

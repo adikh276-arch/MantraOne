@@ -1,6 +1,7 @@
 from __future__ import annotations
 from core.providers.llm_provider import LLMProvider
 
+
 class NarrativeService:
     def __init__(self) -> None:
         self._llm = LLMProvider()

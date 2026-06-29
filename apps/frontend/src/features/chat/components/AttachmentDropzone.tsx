@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud } from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { UploadCloud } from "lucide-react";
 
 interface AttachmentDropzoneProps {
   children: React.ReactNode;
@@ -24,10 +24,10 @@ export function AttachmentDropzone({ children }: AttachmentDropzoneProps) {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      console.log('File dropped:', files[0].name);
+      console.log("File dropped:", files[0].name);
       // Initiate upload mutation and OCR pipeline
     }
   };

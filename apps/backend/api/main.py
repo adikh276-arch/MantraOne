@@ -5,9 +5,20 @@ from config.settings import settings
 from api.middleware.auth_middleware import AuthMiddleware
 from api.middleware.error_handler import exception_handlers
 from api.routers.v1 import (
-    families, members, checkins, health_records,
-    medications, documents, consultations, escalations,
-    timeline, conversations, internal, memory, family, clinical
+    families,
+    members,
+    checkins,
+    health_records,
+    medications,
+    documents,
+    consultations,
+    escalations,
+    timeline,
+    conversations,
+    internal,
+    memory,
+    family,
+    clinical,
 )
 
 app = FastAPI(
@@ -26,9 +37,11 @@ app.add_middleware(
 )
 app.add_middleware(AuthMiddleware)
 
+
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     return {"status": "ok", "version": settings.app_version}
+
 
 app.include_router(families.router, prefix="/v1/families", tags=["Families"])
 app.include_router(family.router, prefix="/v1/family", tags=["Family Snapshot"])
