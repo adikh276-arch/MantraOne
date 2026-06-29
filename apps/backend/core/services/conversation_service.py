@@ -49,15 +49,20 @@ class ConversationService:
         self._db.add(user_msg)
         await self._db.commit()
         
-        # Retrieve context from MemoryProvider
-        fragments = await self._memory.recall(text, family_id=family_id, member_id=member_id)
-        context = "\n".join([f"- {f.content}" for f in fragments]) if fragments else "No specific past context found."
+        # Retrieve Canonical Clinical Context
+        from core.services.clinical_context_builder import ClinicalContextBuilder
+        context_builder = ClinicalContextBuilder(self._db)
+        clinical_context = await context_builder.build_context(member_id, family_id, query=text)
+        context_json = clinical_context.model_dump_json()
         
         # Prepare system prompt
         system_prompt = (
-            "You are MantraOne, a compassionate health companion.\n"
-            f"Context from memory:\n{context}\n\n"
-            "Provide a helpful, empathetic response."
+            "You are MantraOne, a highly secure, contextually grounded AI health companion restricted ONLY to the provided family context.\n"
+            "CRITICAL INSTRUCTION: You MUST NOT answer questions using your pre-trained general knowledge base.\n"
+            "CRITICAL INSTRUCTION: If the user asks about a person, entity, or topic that is NOT explicitly present in the context below, you MUST reply that you do not have any information about them in the family records.\n"
+            "Do not hallucinate facts. Rely entirely on the retrieved memory context.\n"
+            f"Context from memory:\n{context_json}\n\n"
+            "Provide a helpful, concise, and empathetic response grounded strictly in the structured context above."
         )
         
         # In a real streaming implementation with AsyncOpenAI, we would stream chunks

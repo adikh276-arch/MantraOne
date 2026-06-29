@@ -118,33 +118,41 @@ export function Scene3Graph({ onNext, mode }: { onNext: () => void, mode: "live"
           animate={{ scale: zoom }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {/* Animated Edge Lines (Only drawn if nodes actually exist in the UI) */}
+          {(() => {
+            const getMockPos = (id: string) => {
+               const isPres = mode === "presentation";
+               if (isPres) {
+                 if (id === '1') return { x: '50%', y: '50%' };
+                 if (id === '2') return { x: '75%', y: '35%' };
+                 if (id === '3') return { x: '75%', y: '65%' };
+                 if (id === '4') return { x: '25%', y: '50%' };
+                 if (id === '5') return { x: '25%', y: '25%' };
+               } else {
+                 const isCenterNode = id === nodes[0]?.id; 
+                 if (isCenterNode) return { x: '50%', y: '50%' };
+                 
+                 const nonCenterNodes = nodes.filter(n => n.id !== nodes[0]?.id);
+                 const idx = nonCenterNodes.findIndex(n => n.id === id);
+                 if (idx === -1) return { x: '50%', y: '50%' };
+                 
+                 const angle = (idx / nonCenterNodes.length) * Math.PI * 2;
+                 const radiusX = 25;
+                 const radiusY = 30;
+                 return { 
+                   x: `${50 + Math.cos(angle) * radiusX}%`, 
+                   y: `${50 + Math.sin(angle) * radiusY}%` 
+                 };
+               }
+               return { x: '50%', y: '50%' };
+            };
+            return (
+              <>
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
             <AnimatePresence>
               {edges.map((edge, i) => {
-                 // For presentation mode, we hardcode positions. For live mode, we might need a force graph library, but we can fake positions via index for demo if we don't have a layout engine
-                 const getMockPos = (id: string) => {
-                    const isPres = mode === "presentation";
-                    if (isPres) {
-                      if (id === '1') return { x: 300, y: 250 };
-                      if (id === '2') return { x: 500, y: 150 };
-                      if (id === '3') return { x: 500, y: 350 };
-                      if (id === '4') return { x: 100, y: 250 };
-                      if (id === '5') return { x: 100, y: 100 };
-                    } else {
-                      // VERY basic deterministic positioning for Live Mode just for the 2D canvas demo
-                      const idx = nodes.findIndex(n => n.id === id);
-                      if (idx === -1) return { x: 0, y: 0 };
-                      const angle = (idx / nodes.length) * Math.PI * 2;
-                      const radius = 150;
-                      return { x: 300 + Math.cos(angle) * radius, y: 250 + Math.sin(angle) * radius };
-                    }
-                    return { x: 300, y: 250 };
-                 };
-                 
                  const sourcePos = getMockPos(edge.source);
                  const targetPos = getMockPos(edge.target);
-                 if (sourcePos.x === 0 || targetPos.x === 0) return null; // skip if node not found yet
+                 if (!sourcePos.x || !targetPos.x) return null; // skip if node not found yet
 
                  return (
                   <motion.line
@@ -163,22 +171,8 @@ export function Scene3Graph({ onNext, mode }: { onNext: () => void, mode: "live"
 
           {/* Nodes */}
           {nodes.map((node, i) => {
-            const getMockPos = (id: string) => {
-               const isPres = mode === "presentation";
-               if (isPres) {
-                 if (id === '1') return { left: '300px', top: '250px' };
-                 if (id === '2') return { left: '500px', top: '150px' };
-                 if (id === '3') return { left: '500px', top: '350px' };
-                 if (id === '4') return { left: '100px', top: '250px' };
-                 if (id === '5') return { left: '100px', top: '100px' };
-               } else {
-                 const angle = (i / nodes.length) * Math.PI * 2;
-                 const radius = 150;
-                 return { left: `${300 + Math.cos(angle) * radius}px`, top: `${250 + Math.sin(angle) * radius}px` };
-               }
-               return { left: '300px', top: '250px' };
-            };
-            
+            const pos = getMockPos(node.id);
+            const style = { left: pos.x, top: pos.y };
             return (
               <motion.div
                 key={node.id}
@@ -186,18 +180,21 @@ export function Scene3Graph({ onNext, mode }: { onNext: () => void, mode: "live"
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
                 className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 z-10 ${node.id === '1' ? 'z-20' : ''}`}
-                style={getMockPos(node.id)}
+                style={style}
               >
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center border-4 ${node.id === '1' ? 'bg-blue-900 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'bg-neutral-900 border-neutral-800'}`}>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center border-4 ${node.id === nodes[0]?.id ? 'bg-blue-900 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'bg-neutral-900 border-neutral-800'}`}>
                    {getNodeIcon(node.type)}
                 </div>
                 <div className="bg-black/80 backdrop-blur border border-neutral-800 px-4 py-2 rounded-full whitespace-nowrap">
-                   <p className={`text-sm font-medium ${node.id === '1' ? 'text-white' : 'text-neutral-300'}`}>{node.label}</p>
+                   <p className={`text-sm font-medium ${node.id === nodes[0]?.id ? 'text-white' : 'text-neutral-300'}`}>{node.label}</p>
                    <p className="text-[10px] text-neutral-500 uppercase tracking-widest text-center mt-0.5">{node.type}</p>
                 </div>
               </motion.div>
             );
           })}
+          </>
+            );
+          })()}
         </motion.div>
       </div>
 

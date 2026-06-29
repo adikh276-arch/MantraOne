@@ -6,7 +6,7 @@ import httpx
 from uuid import UUID
 
 BASE_URL = "http://localhost:8000"
-MOCK_TOKEN = "mock_token_12345"
+MOCK_TOKEN = "test-token-golden"
 HEADERS = {"Authorization": f"Bearer {MOCK_TOKEN}"}
 
 async def main():

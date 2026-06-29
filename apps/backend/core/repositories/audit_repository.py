@@ -8,17 +8,12 @@ class AuditRepository:
     def __init__(self, db: AsyncSession) -> None:
         self._db = db
 
-    async def log_phi_access(
-        self, actor_firebase_uid: str, actor_role: ActorRole, action: str,
-        resource_type: str, result: str, family_id: UUID | None = None,
-        member_id: UUID | None = None, resource_id: UUID | None = None,
-        endpoint: str | None = None, ip_address: str | None = None, user_agent: str | None = None,
+    async def log_audit_event(
+        self, actor_id: str, action: str, resource: str, result: str, target_id: str | None = None
     ) -> AuditLog:
         log = AuditLog(
-            family_id=family_id, member_id=member_id, actor_firebase_uid=actor_firebase_uid,
-            actor_role=actor_role.value, action=action, resource_type=resource_type,
-            resource_id=resource_id, endpoint=endpoint, ip_address=ip_address,
-            user_agent=user_agent, result=result,
+            actor_id=actor_id, target_id=target_id, action=action,
+            resource=resource, result=result,
         )
         self._db.add(log)
         await self._db.flush()

@@ -12,6 +12,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in ["/health", "/docs", "/openapi.json"] or request.url.path.startswith("/v1/internal/"):
             return await call_next(request)
 
+        from config.settings import settings
+        if settings.local_dev_mode:
+            request.state.user = {"uid": "local-dev", "email": "dev@local.host"}
+            return await call_next(request)
+
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return Response(content="Unauthorized", status_code=401)

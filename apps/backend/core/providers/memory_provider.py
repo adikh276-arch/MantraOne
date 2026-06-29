@@ -17,10 +17,10 @@ class MemoryProvider(IMemoryProvider):
     async def _ensure_configured(self) -> None:
         if self._configured:
             return
-        await cognee.config.set_llm_config({"llm_provider": "custom", "llm_model": settings.groq_model, "llm_api_key": settings.groq_api_key, "llm_endpoint": settings.groq_base_url})
+        cognee.config.set_llm_config({"llm_provider": "custom", "llm_model": settings.groq_model, "llm_api_key": settings.groq_api_key, "llm_endpoint": settings.groq_base_url})
         db_path = Path(settings.cognee_db_path)
         db_path.mkdir(parents=True, exist_ok=True)
-        await cognee.config.set_vector_db_config({"vector_db_provider": "lancedb", "vector_db_url": str(db_path / "vectors")})
+        cognee.config.set_vector_db_config({"vector_db_provider": "lancedb", "vector_db_url": str(db_path / "vectors")})
         self._configured = True
 
     def _dataset_name(self, family_id: UUID, member_id: UUID) -> str:

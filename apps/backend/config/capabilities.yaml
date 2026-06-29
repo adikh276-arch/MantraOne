@@ -1,0 +1,49 @@
+ocr:
+  provider: sarvam
+  cache: true
+
+entity_extraction:
+  provider: sarvam
+  cache: false
+
+conversation:
+  provider: sarvam
+  cache: false
+
+translation:
+  provider: sarvam
+  cache: true
+
+speech_to_text:
+  provider: sarvam
+  streaming: false
+  cache: false
+
+text_to_speech:
+  provider: sarvam
+  streaming: false
+  cache: true
+
+doctor_brief:
+  provider: sarvam
+  cache: true
+
+timeline:
+  provider: sarvam
+  cache: true
+
+reasoning:
+  provider: sarvam
+  cache: false
+
+summarization:
+  provider: sarvam
+  cache: true
+
+health_summary:
+  provider: sarvam
+  cache: true
+
+question_generation:
+  provider: sarvam
+  cache: false

@@ -7,7 +7,7 @@ from api.middleware.error_handler import exception_handlers
 from api.routers.v1 import (
     families, members, checkins, health_records,
     medications, documents, consultations, escalations,
-    timeline, conversations, internal, memory
+    timeline, conversations, internal, memory, family, clinical
 )
 
 app = FastAPI(
@@ -31,8 +31,10 @@ async def health_check() -> dict[str, str]:
     return {"status": "ok", "version": settings.app_version}
 
 app.include_router(families.router, prefix="/v1/families", tags=["Families"])
+app.include_router(family.router, prefix="/v1/family", tags=["Family Snapshot"])
 app.include_router(members.router, prefix="/v1/members", tags=["Members"])
 app.include_router(checkins.router, prefix="/v1/checkins", tags=["Checkins"])
+app.include_router(clinical.router, prefix="/v1/clinical", tags=["Clinical"])
 app.include_router(health_records.router, prefix="/v1/health-records", tags=["Health Records"])
 app.include_router(medications.router, prefix="/v1/medications", tags=["Medications"])
 app.include_router(documents.router, prefix="/v1/documents", tags=["Documents"])

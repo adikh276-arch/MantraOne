@@ -78,9 +78,56 @@ class MemoryFragment(BaseModel):
     family_id: UUID
     memory_type: MemoryType
     timestamp: datetime
-    source_entity_type: str
     source_entity_id: UUID
     watcher_domains: list[str] = Field(default_factory=list)
+    confidence: float = Field(1.0, description="Confidence in this memory")
+    freshness: float = Field(1.0, description="Freshness of the memory")
+    source_reliability: float = Field(1.0, description="Reliability of the source")
+    verification_status: str = Field("unverified", description="verified, unverified, disputed")
+    corroboration_count: int = Field(0, description="Number of times corroborated")
+    last_verified_at: datetime | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PreventiveObservationContext(BaseModel):
+    id: UUID
+    observation_type: str
+    description: str
+    status: str
+    created_at: datetime
+
+class TimelineChapter(BaseModel):
+    title: str
+    description: str
+    start_date: datetime
+    end_date: datetime | None = None
+    events: list[dict] = Field(default_factory=list)
+
+class FamilyDigitalTwin(BaseModel):
+    family_id: UUID
+    members: list[dict] = Field(default_factory=list) # Basic demographics
+    health_states: dict[str, dict] = Field(default_factory=dict) # member_id -> state summary
+    active_conditions: dict[str, list[str]] = Field(default_factory=dict)
+    risks: dict[str, list[str]] = Field(default_factory=dict)
+    medications: dict[str, list[str]] = Field(default_factory=dict)
+    confidence_scores: dict[str, dict] = Field(default_factory=dict) # domain -> scores
+    preventive_needs: dict[str, list[PreventiveObservationContext]] = Field(default_factory=dict)
+    missing_information: dict[str, list[str]] = Field(default_factory=dict)
+    timeline_chapters: dict[str, list[TimelineChapter]] = Field(default_factory=dict)
+    follow_ups: dict[str, list[dict]] = Field(default_factory=dict)
+    insights: dict[str, list[dict]] = Field(default_factory=dict)
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ClinicalContext(BaseModel):
+    patient_summary: dict = Field(default_factory=dict)
+    active_conditions: list[str] = Field(default_factory=list)
+    current_medications: list[str] = Field(default_factory=list)
+    recent_changes: list[str] = Field(default_factory=list)
+    timeline_summary: list[dict] = Field(default_factory=list)
+    confidence: dict = Field(default_factory=dict)
+    missing_information: list[str] = Field(default_factory=list)
+    pending_followups: list[dict] = Field(default_factory=list)
+    family_context: dict = Field(default_factory=dict)
+    retrieved_memories: list[MemoryFragment] = Field(default_factory=list)
 
 class HealthContext(BaseModel):
     member_id: UUID
@@ -102,6 +149,12 @@ class HealthMemoryMetadata(BaseModel):
     source_entity_type: str
     source_entity_id: UUID
     confidence: float = 1.0
+    freshness: float = 1.0
+    source_reliability: float = 1.0
+    verification_status: str = "unverified"
+    corroboration_count: int = 0
+    last_verified_at: datetime | None = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ForgetResult(BaseModel):
     family_id: UUID

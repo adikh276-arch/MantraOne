@@ -1,7 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, AlertTriangle, CheckCircle, FileText } from "lucide-react";
+import { Clock, AlertTriangle, CheckCircle, FileText, Activity, HeartPulse } from "lucide-react";
+
+const events = [
+  {
+    id: "1",
+    type: "signal",
+    date: "OCTOBER 15, 2026",
+    title: "HbA1c Elevated to 8.2%",
+    description: "Lab report ingested showing a spike in HbA1c. Medication adjusted to Metformin 500mg by Dr. Gupta.",
+    badge: "Document Extraction"
+  },
+  {
+    id: "2",
+    type: "vitals",
+    date: "SEPTEMBER 02, 2026",
+    title: "Vitals Baseline Recorded",
+    description: "Routine checkup showed stable vitals. No medication prescribed at the time.",
+    badge: "Consultation Notes"
+  }
+];
 
 export function Scene5Timeline({ onNext }: { onNext: () => void }) {
   return (

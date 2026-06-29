@@ -6,6 +6,16 @@ from infrastructure.database.models import FamilyMember, Document, Medication, D
 class HealthGraphProjectionService:
     def __init__(self, db: AsyncSession):
         self.db = db
+        from core.providers.encryption_service import EncryptionService
+        self.enc = EncryptionService()
+
+    def _safe_decrypt(self, text: str | None) -> str:
+        if not text:
+            return "Unknown"
+        try:
+            return self.enc.decrypt(text)
+        except Exception:
+            return text
 
     async def get_family_graph(self, family_id: UUID) -> dict:
         nodes = []
@@ -17,7 +27,7 @@ class HealthGraphProjectionService:
         for member in members.scalars().all():
             nodes.append({
                 "id": str(member.id),
-                "label": member.name,
+                "label": self._safe_decrypt(member.name),
                 "type": "person",
                 "metadata": {"relationship": member.relationship}
             })
@@ -29,7 +39,7 @@ class HealthGraphProjectionService:
             diag_id = f"diag_{diagnosis.id}"
             nodes.append({
                 "id": diag_id,
-                "label": diagnosis.condition_name,
+                "label": self._safe_decrypt(diagnosis.condition_name),
                 "type": "condition",
                 "metadata": {"status": diagnosis.status}
             })
@@ -51,7 +61,7 @@ class HealthGraphProjectionService:
             med_id = f"med_{med.id}"
             nodes.append({
                 "id": med_id,
-                "label": med.name,
+                "label": self._safe_decrypt(med.name),
                 "type": "medication",
                 "metadata": {"dosage": med.dosage, "status": "active" if med.is_active else "inactive"}
             })
@@ -74,7 +84,7 @@ class HealthGraphProjectionService:
             doc_id = f"doc_{doc.id}"
             nodes.append({
                 "id": doc_id,
-                "label": doc.original_filename or doc.document_type,
+                "label": self._safe_decrypt(doc.original_filename) if doc.original_filename else doc.document_type,
                 "type": "document",
                 "metadata": {"type": doc.document_type, "status": doc.processing_status}
             })

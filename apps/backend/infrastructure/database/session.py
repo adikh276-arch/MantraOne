@@ -21,7 +21,7 @@ def get_engine() -> AsyncEngine:
             max_overflow=settings.database_max_overflow,
             pool_timeout=settings.database_pool_timeout,
             pool_pre_ping=True,
-            echo=settings.is_development,
+            echo=(settings.environment == "development"),
         )
     return _engine
 

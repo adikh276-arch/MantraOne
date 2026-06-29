@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Scene1Welcome } from "@/features/demo/components/Scene1Welcome";
 import { Scene2Upload } from "@/features/demo/components/Scene2Upload";
 import { Scene3Graph } from "@/features/demo/components/Scene3Graph";
